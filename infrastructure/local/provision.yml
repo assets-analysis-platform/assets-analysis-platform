@@ -1,0 +1,35 @@
+connections:
+  kafka:
+    templateName: Kafka
+    tags: [ "testEnv",  "cluster-1", "kafka-brokers" ]
+    configurationObject:
+      protocol: PLAINTEXT
+      kafkaBootstrapServers:
+        - PLAINTEXT://broker1:9092
+        - PLAINTEXT://broker2:9092
+        - PLAINTEXT://broker3:9092
+  kafka-connect-cluster:
+    templateName: KafkaConnect
+    tags: [ "testEnv",  "cluster-1", "lenses-processors" ]
+    configurationObject:
+      workers:
+        - http://kafka-connect:8083
+
+  zookeeper:
+    tags: [ "testEnv",  "cluster-1", "zookeepers" ]
+    templateName: Zookeeper
+    configurationObject:
+      zookeeperUrls:
+        - zookeeper1:2181
+        - zookeeper2:2181
+        - zookeeper3:2181
+      zookeeperSessionTimeout: 10000 # in milliseconds
+      zookeeperConnectionTimeout: 10000 # in milliseconds
+
+
+  schema-registry:
+    tags: [ "testEnv", "cluster-1", "schema-registry" ]
+    templateName: SchemaRegistry
+    configurationObject:
+      schemaRegistryUrls:
+        - http://schema-registry:8081

@@ -1,0 +1,303 @@
+version: '3.9'
+x-common:
+  &common
+  env_file:
+    - ./.env
+  platform: linux/amd64
+
+services:
+  zookeeper1:
+    <<: *common
+    image: confluentinc/cp-zookeeper:${CONF_VERSION}
+    hostname: zookeeper1
+    container_name: zookeeper1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: 0.0.0.0:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+      TZ: ${TIME_ZONE}
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  zookeeper2:
+    <<: *common
+    image: confluentinc/cp-zookeeper:${CONF_VERSION}
+    hostname: zookeeper2
+    container_name: zookeeper2
+    ports:
+      - "2182:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;0.0.0.0:2888:3888;zookeeper3:2888:3888
+      TZ: ${TIME_ZONE}
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  zookeeper3:
+    <<: *common
+    image: confluentinc/cp-zookeeper:${CONF_VERSION}
+    hostname: zookeeper3
+    container_name: zookeeper3
+    ports:
+      - "2183:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;0.0.0.0:2888:3888
+      TZ: ${TIME_ZONE}
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+
+  broker1:
+    image: confluentinc/cp-kafka:${CONF_VERSION}
+    hostname: broker1
+    container_name: broker1
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+    ports:
+      - 19092:19092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker1:9092,PLAINTEXT_HOST://localhost:19092"
+      KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "true"
+      KAFKA_REPLICA_SELECTOR_CLASS: "org.apache.kafka.common.replica.RackAwareReplicaSelector"
+      KAFKA_CONFLUENT_BALANCER_HEAL_UNEVEN_LOAD_TRIGGER: "ANY_UNEVEN_LOAD"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,JMX:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_BROKER_RACK: 'zone1'
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  broker2:
+    image: confluentinc/cp-kafka:${CONF_VERSION}
+    hostname: broker2
+    container_name: broker2
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+    ports:
+      - 19093:19093
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker2:9092,PLAINTEXT_HOST://localhost:19093"
+      KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "true"
+      KAFKA_CONFLUENT_BALANCER_HEAL_UNEVEN_LOAD_TRIGGER: "ANY_UNEVEN_LOAD"
+      KAFKA_REPLICA_SELECTOR_CLASS: "org.apache.kafka.common.replica.RackAwareReplicaSelector"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_BROKER_RACK: 'zone1'
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  broker3:
+    image: confluentinc/cp-kafka:${CONF_VERSION}
+    hostname: broker3
+    container_name: broker3
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+    ports:
+      - 19094:19094
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://broker3:9092,PLAINTEXT_HOST://localhost:19094"
+      KAFKA_AUTO_LEADER_REBALANCE_ENABLE: "true"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "true"
+      KAFKA_CONFLUENT_BALANCER_HEAL_UNEVEN_LOAD_TRIGGER: "ANY_UNEVEN_LOAD"
+      KAFKA_REPLICA_SELECTOR_CLASS: "org.apache.kafka.common.replica.RackAwareReplicaSelector"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_BROKER_RACK: 'zone1'
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  schema-registry:
+    <<: *common
+    image: confluentinc/cp-schema-registry:${CONF_VERSION}
+    container_name: schema-registry
+    restart: always
+    ports:
+      - "8091:8081"
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+      - broker1
+      - broker2
+      - broker3
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_AVRO_COMPATIBILITY_LEVEL: "none"
+      SCHEMA_REGISTRY_LISTENERS: "http://schema-registry:8081"
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: "WARN"
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
+      TZ: ${TIME_ZONE}
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+  
+  kafka-connect:
+    <<: *common
+    image: confluentinc/cp-kafka-connect:${CONF_VERSION}
+    hostname: kafka-connect
+    container_name: kafka-connect
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+      - broker1
+      - broker2
+      - broker3
+      - schema-registry
+    ports:
+      - "8083:8083"
+      - "9584:9584"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "broker1:9092,broker2:9092,broker3:9092"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: kafka-connect
+      CONNECT_CONFIG_STORAGE_TOPIC: kafka-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: kafka-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: kafka-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper1:2181,zookeeper2:2181,zookeeper3:2181'
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/data/connect-jars
+      CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
+      AWS_ACCESS_KEY_ID: ${MINIO_USER}
+      AWS_SECRET_KEY: ${MINIO_PASSWORD}
+      AWS_REGION: ${MINIO_REGION}
+      volumes:
+    #        - ./license.json:/license.json
+    #        - ./kafka-connect-aws-s3-4.2.0/:/data/connect-jars
+    command:
+      - bash
+      - -c
+      - |
+        echo "Installing Connector"
+        confluent-hub install --no-prompt confluentinc/kafka-connect-s3-source:1.2.2
+        #
+        echo "Launching Kafka Connect worker"
+        /etc/confluent/docker/run &
+        #
+        sleep infinity
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  postgres_db:
+    image: postgres:${POSTGRES_VERSION:-latest}
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${POSTGRES_DB_HOST_PORT}:${POSTGRES_DB_INTERNAL_PORT}'
+    volumes:
+      - ./lenses/data/storage:/var/lib/postgresql/data/:z
+      - ./lenses_db-init.sh:/docker-entrypoint-initdb.d/lenses_db-init.sh
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  lenses:
+    env_file:
+      - ./.env
+    image: lensesio/lenses:${LENSES_VERSION}
+    container_name: lenses
+    environment:
+      LENSES_PORT: ${LENSES_PORT}
+      LENSES_SECURITY_USER: ${LENSES_SECURITY_USER}
+      LENSES_SECURITY_PASSWORD: ${LENSES_SECURITY_PASSWORD}
+      LENSES_PLUGIN_PATH: '/opt/lenses/plugins'
+    ports:
+      - 9991:9991
+      - 9102:9102
+    volumes:
+      - ./license.json:/mnt/secrets/license.json
+      #      - ./lenses/storage:/var/lib/lenses/storage
+      - ./plugins:/opt/lenses/plugins
+      - ./lenses/data:/data
+      - ./lenses.conf:/mnt/settings/lenses.conf
+  #        - ./brokerconnect-aws-s3-4.2.0/:/opt/lenses/plugins/brokerconnect-aws-s3-4.2.0/:rw
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  lenses-provision:
+    env_file:
+      - ./.env
+    image: lensesio/lenses-cli:${LENSES_VERSION}
+    container_name: lenses-provision
+    volumes:
+      - ./provision.yml:/mnt/provision-secrets/provision.yml
+      - ./license.json:/mnt/secrets/license.json
+    command:
+      - bash
+      - -c
+      - |
+        lenses-cli provision --wait-for-lenses \
+          --host="lenses:${LENSES_PORT}" \
+          --user="${LENSES_SECURITY_USER}" \
+          --pass="${LENSES_SECURITY_PASSWORD}" \
+          /mnt/provision-secrets/provision.yml
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  minio:
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    image: "minio/minio"
+    container_name: minio
+    command: minio server /data/minio
+    volumes:
+      - ./docker/minio:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    environment:
+      MINIO_OPTS: "— address :9000"
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_REGION: ${MINIO_REGION}
+      MINIO_CONSOLE_ADDRESS: ":9001"
+    networks:
+      - ${GLOBAL_NETWORK:-services}
