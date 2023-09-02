@@ -1,0 +1,71 @@
+version: '3.9'
+
+x-common:
+  &common
+  env_file:
+    - ./.env
+  platform: linux/amd64
+
+services:
+  zookeeper1:
+    <<: *common
+    image: confluentinc/cp-zookeeper:${CONF_VERSION}
+    hostname: zookeeper1
+    container_name: zookeeper1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: 0.0.0.0:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+      TZ: ${TIME_ZONE}
+    volumes:
+      - ./containers-data/zookeper/zoo-1/data:/var/lib/zookeeper/data
+      - ./containers-data/zookeper/zoo-1/log:/var/lib/zookeeper/log
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  zookeeper2:
+    <<: *common
+    image: confluentinc/cp-zookeeper:${CONF_VERSION}
+    hostname: zookeeper2
+    container_name: zookeeper2
+    ports:
+      - "2182:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;0.0.0.0:2888:3888;zookeeper3:2888:3888
+      TZ: ${TIME_ZONE}
+    volumes:
+      - ./containers-data/zookeper/zoo-2/data:/var/lib/zookeeper/data
+      - ./containers-data/zookeper/zoo-2/log:/var/lib/zookeeper/log
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  zookeeper3:
+    <<: *common
+    image: confluentinc/cp-zookeeper:${CONF_VERSION}
+    hostname: zookeeper3
+    container_name: zookeeper3
+    ports:
+      - "2183:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;0.0.0.0:2888:3888
+      TZ: ${TIME_ZONE}
+    volumes:
+      - ./containers-data/zookeper/zoo-3/data:/var/lib/zookeeper/data
+      - ./containers-data/zookeper/zoo-3/log:/var/lib/zookeeper/log
+    networks:
+      - ${GLOBAL_NETWORK:-services}

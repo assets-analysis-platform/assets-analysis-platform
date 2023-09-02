@@ -154,3 +154,5 @@
 # ignore local enviroment containers data
 ######################
 infrastructure/local/containers-data/
+infrastructure/local/.env
+infrastructure/local/license.json

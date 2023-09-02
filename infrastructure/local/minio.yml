@@ -1,0 +1,32 @@
+version: '3.9'
+
+x-common:
+  &common
+  env_file:
+    - ./.env
+  platform: linux/amd64
+
+services:
+  minio:
+    <<: *common
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    image: "minio/minio"
+    container_name: minio
+    command: minio server /data/minio
+    volumes:
+      - ./containers-data:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    environment:
+      MINIO_OPTS: "— address :9000"
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_REGION: ${MINIO_REGION}
+      MINIO_CONSOLE_ADDRESS: ":9001"
+    networks:
+      - ${GLOBAL_NETWORK:-services}

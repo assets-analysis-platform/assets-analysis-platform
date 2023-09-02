@@ -1,0 +1,52 @@
+version: '3.9'
+
+x-common:
+  &common
+  env_file:
+    - ./.env
+  platform: linux/amd64
+
+services:
+  lenses:
+    <<: *common
+    image: lensesio/lenses:${LENSES_VERSION}
+    container_name: lenses
+    environment:
+      LENSES_PORT: ${LENSES_PORT}
+      LENSES_SECURITY_USER: ${LENSES_SECURITY_USER}
+      LENSES_SECURITY_PASSWORD: ${LENSES_SECURITY_PASSWORD}
+      LENSES_PLUGIN_PATH: '/opt/lenses/plugins'
+    ports:
+      - 9991:9991
+      - 9102:9102
+    depends_on:
+      - postgres_db
+    volumes:
+      - ./license.json:/mnt/secrets/license.json
+      - ./plugins:/opt/lenses/plugins
+      - ./containers-data/lenses/data:/data
+      - ./lenses.conf:/mnt/settings/lenses.conf
+    #        - ./brokerconnect-aws-s3-4.2.0/:/opt/lenses/plugins/brokerconnect-aws-s3-4.2.0/:rw
+    networks:
+      - ${GLOBAL_NETWORK:-services}
+
+  lenses-provision:
+    <<: *common
+    image: lensesio/lenses-cli:${LENSES_VERSION}
+    container_name: lenses-provision
+    depends_on:
+      - postgres_db
+    volumes:
+      - ./provision.yml:/mnt/provision-secrets/provision.yml
+      - ./license.json:/mnt/secrets/license.json
+    command:
+      - bash
+      - -c
+      - |
+        lenses-cli provision --wait-for-lenses \
+          --host="lenses:${LENSES_PORT}" \
+          --user="${LENSES_SECURITY_USER}" \
+          --pass="${LENSES_SECURITY_PASSWORD}" \
+          /mnt/provision-secrets/provision.yml
+    networks:
+      - ${GLOBAL_NETWORK:-services}

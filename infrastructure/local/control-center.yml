@@ -1,0 +1,39 @@
+version: '3.9'
+
+x-common:
+  &common
+  env_file:
+    - ./.env
+  platform: linux/amd64
+
+services:
+  control-center:
+    <<: *common
+    image: confluentinc/cp-enterprise-control-center:${CONF_VERSION}
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+      - broker1
+      - broker2
+      - broker3
+      - schema-registry
+      - kafka-connect
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: "broker1:9092,broker2:9092,broker3:9092"
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
+      CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER: "kafka-connect:8083"
+#      CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8088"
+#      CONTROL_CENTER_KSQL_KSQLDB1_ADVERTISED_URL: "http://localhost:8088"
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+    networks:
+      - ${GLOBAL_NETWORK:-services}

@@ -1,0 +1,33 @@
+version: '3.9'
+
+x-common:
+  &common
+  env_file:
+    - ./.env
+  platform: linux/amd64
+
+services:
+  schema-registry:
+    <<: *common
+    image: confluentinc/cp-schema-registry:${CONF_VERSION}
+    container_name: schema-registry
+    restart: always
+    ports:
+      - "8091:8081"
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+      - broker1
+      - broker2
+      - broker3
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_AVRO_COMPATIBILITY_LEVEL: "none"
+      SCHEMA_REGISTRY_LISTENERS: "http://schema-registry:8081"
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: "WARN"
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "broker1:9092,broker2:9092,broker3:9092"
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
+      TZ: ${TIME_ZONE}
+    networks:
+      - ${GLOBAL_NETWORK:-services}
