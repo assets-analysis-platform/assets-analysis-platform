@@ -156,3 +156,7 @@
 infrastructure/local/containers-data/
 infrastructure/local/.env
 infrastructure/local/license.json
+######################
+# ignore airflow virtual environment
+######################
+airflow/aap_airflow_virtualenv/
