@@ -1,8 +1,8 @@
 from airflow import DAG
-from datetime import datetime, timedelta
+from datetime import timedelta
 from airflow.operators.empty import EmptyOperator
 
-project_name = 'test_project'
+project_name = 'price_prediction'
 
 default_args = {
     "owner": 'airflow',
@@ -19,7 +19,7 @@ default_args = {
 main_dag = DAG(
     project_name,
     default_args=default_args,
-    schedule_interval=get_schedule()
+    schedule_interval='*/15 * * * *'
 )
 
 start = EmptyOperator(

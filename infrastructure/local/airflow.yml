@@ -1,0 +1,118 @@
+# Basic Airflow cluster configuration for CeleryExecutor with Redis and PostgreSQL.
+#
+# WARNING: This configuration is for local development. Do not use it in a production deployment.
+#
+# This configuration supports basic configuration using environment variables or an .env file
+# The following variables are supported:
+#
+# AIRFLOW_IMAGE_NAME         - Docker image name used to run Airflow.
+#                              Default: -
+# AIRFLOW_UID                - User ID in Airflow containers
+#                              Default: 50000
+# AIRFLOW_GID                - Group ID in Airflow containers
+#                              Default: 50000
+# _AIRFLOW_WWW_USER_USERNAME - Username for the administrator account.
+#                              Default: airflow
+# _AIRFLOW_WWW_USER_PASSWORD - Password for the administrator account.
+#                              Default: airflow
+#
+---
+version: '3.9'
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:${AIRFLOW_VERSION}
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  depends_on:
+    redis:
+      condition: service_healthy
+    postgres_db:
+      condition: service_healthy
+    vault:
+      condition: service_healthy
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${POSTGRES_DB_HOST_NAME}/${AIRFLOW_DATABASE_NAME}
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${POSTGRES_DB_HOST_NAME}/${AIRFLOW_DATABASE_NAME}
+    AIRFLOW__CELERY__BROKER_URL: redis://:@${REDIS_HOST_NAME}:${REDIS_HOST_INTERNAL_PORT}/0
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__SECRETS__BACKEND: airflow.providers.hashicorp.secrets.vault.VaultBackend
+    AIRFLOW__SECRETS__BACKEND_KWARGS: '{"url":"http://${VAULT_HOST_NAME}:${VAULT_HOST_INTERNAL_PORT}","token":"${VAULT_DEV_ROOT_TOKEN_ID}","variables_path":"${VAULT_VARIABLES_PATH}","mount_point":"${VAULT_MOUNT_POINT}","connections_path":"${VAULT_CONNECTIONS_PATH}"}'
+    AIRFLOW__CORE__STORE_DAG_CODE: 'true'
+    AIRFLOW__CORE__STORE_SERIALIZED_DAGS: 'true'
+    AIRFLOW__CORE__MIN_SERIALIZED_DAG_UPDATE_INTERVAL: 30
+    AIRFLOW__CORE__MIN_SERIALIZED_DAG_FETCH_INTERVAL: 10
+    AIRFLOW__SMART_SENSOR__USE_SMART_SENSOR: 'true'
+    AIRFLOW__SMART_SENSOR__SHARD_CODE_UPPER_LIMIT: 10000
+    AIRFLOW__SMART_SENSOR__SHARDS: 3
+    AIRFLOW__SMART_SENSOR__SENSORS_ENABLED: NamedHivePartitionSensor, MetastorePartitionSensor, FileExtendedSensor
+  volumes:
+    - ./containers-data/airflow/logs:/opt/airflow/logs
+    - ./../../airflow/dags:/opt/airflow/dags
+    - ./../../airflow/plugins:/opt/airflow/plugins
+    - ./../../airflow/projects:/opt/airflow/projects
+    - ./../../airflow/scripts:/opt/airflow/scripts
+    - ./../../airflow/tests:/opt/airflow/tests
+    - ./../../airflow/requirements.txt:/opt/airflow/requirements.txt
+  networks:
+    - ${GLOBAL_NETWORK:-services}
+
+services:
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow-init
+    command: version
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+
+  airflow_webserver:
+    <<: *airflow-common
+    container_name: ${AIRFLOW_WEBSERVER_HOST_NAME}
+    command: webserver
+    ports:
+      - "${AIRFLOW_WEBSERVER_HOST_PORT}:${AIRFLOW_WEBSERVER_HOST_INTERNAL_PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:${AIRFLOW_WEBSERVER_HOST_PORT}/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    volumes:
+      - ./containers-data/airflow/webserver:/var/lib/postgresql/data/:z
+
+  airflow_scheduler-1:
+    <<: *airflow-common
+    container_name: ${AIRFLOW_SCHEDULER_1_HOST_NAME}
+    command: scheduler
+    restart: always
+
+  airflow_worker-1:
+    <<: *airflow-common
+    container_name: ${AIRFLOW_WORKER_1_HOST_NAME}
+    command: celery worker
+    restart: always
+
+  airflow_worker-2:
+    <<: *airflow-common
+    container_name: ${AIRFLOW_WORKER_2_HOST_NAME}
+    command: celery worker -q jobs_queue
+    restart: always
+
+  flower:
+    <<: *airflow-common
+    container_name: ${FLOWER_HOST_NAME}
+    command: celery flower
+    ports:
+      - "${FLOWER_HOST_PORT}:${FLOWER_HOST_INTERNAL_PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:${FLOWER_HOST_PORT}/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
