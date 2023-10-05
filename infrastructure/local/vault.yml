@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  vault:
+    image: vault:${VAULT_VERSION}
+    container_name: ${VAULT_HOST_NAME}
+    expose:
+      - ${VAULT_HOST_PORT}
+    ports:
+      - '${VAULT_HOST_PORT}:${VAULT_HOST_INTERNAL_PORT}'
+    command: server -dev
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--proxy", "off", "http://localhost:${VAULT_HOST_PORT}/v1/sys/health?standbyok=true" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    environment:
+      VAULT_ADDR: http://127.0.0.1:${VAULT_HOST_PORT}
+      VAULT_API_ADDR: http://127.0.0.1:${VAULT_HOST_PORT}
+      VAULT_ADDRESS: http://127.0.0.1:${VAULT_HOST_PORT}
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID}
+    networks:
+      - ${GLOBAL_NETWORK:-services}
