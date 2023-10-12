@@ -2,7 +2,7 @@ from airflow import DAG
 from datetime import timedelta
 from airflow.operators.empty import EmptyOperator
 
-project_name = 'sentiment_analysis'
+project_name = 'sentiment_analysis_TODO_2'
 
 default_args = {
     "owner": 'airflow',
@@ -24,7 +24,7 @@ main_dag = DAG(
 
 start = EmptyOperator(
     dag=main_dag,
-    task_id=project_name
+    task_id="start2_sentiment"
 )
 
 DAGS = [main_dag]

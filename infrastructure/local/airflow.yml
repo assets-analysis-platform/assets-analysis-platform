@@ -37,7 +37,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@${REDIS_HOST_NAME}:${REDIS_HOST_INTERNAL_PORT}/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__SECRETS__BACKEND: airflow.providers.hashicorp.secrets.vault.VaultBackend
     AIRFLOW__SECRETS__BACKEND_KWARGS: '{"url":"http://${VAULT_HOST_NAME}:${VAULT_HOST_INTERNAL_PORT}","token":"${VAULT_DEV_ROOT_TOKEN_ID}","variables_path":"${VAULT_VARIABLES_PATH}","mount_point":"${VAULT_MOUNT_POINT}","connections_path":"${VAULT_CONNECTIONS_PATH}"}'
     AIRFLOW__CORE__STORE_DAG_CODE: 'true'

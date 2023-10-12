@@ -4,14 +4,14 @@ import traceback
 
 from importlib import import_module
 
-# initialize airflow base dir
+# get airflow base dir
 AIRFLOW_BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(AIRFLOW_BASE)
 
 
 class DAGFactory(object):
     """
-      Dag factory: collect dags from all sub folders under ./airflow/projects
+        Dag factory: collect dags from all sub folders under ./airflow/projects
     """
 
     def __init__(self):
@@ -26,20 +26,27 @@ class DAGFactory(object):
     def get_modules_from_all_projects(self):
 
         for project_name in self.projects:
-            try:
-                module_name = "projects.{}.DAG".format(project_name)
-                prj_mod = import_module(module_name)
-                no_of_project_dags = 1
+            project_path = os.path.join(self.project_base, project_name)
 
-                for dag in prj_mod.DAGS:
-                    var_name = '{}-{}'.format(project_name, no_of_project_dags)
+            for subpipeline_name in os.listdir(project_path):
+                subpipeline_path = os.path.join(project_path, subpipeline_name)
+                dag_module_path = os.path.join(subpipeline_path, 'DAG.py')
 
-                    # create unique name for project in global namespace
-                    globals()[var_name] = dag
+                if os.path.exists(dag_module_path):
+                    try:
+                        module_name = "projects.{}.{}.DAG".format(project_name, subpipeline_name)
+                        prj_mod = import_module(module_name)
+                        no_of_project_dags = 1
 
-                    no_of_project_dags += 1
-            except Exception:
-                print(traceback.format_exc())
+                        for dag in prj_mod.DAGS:
+                            var_name = '{}-{}'.format(subpipeline_name, no_of_project_dags)
+
+                            # create unique name for project in global namespace
+                            globals()[var_name] = dag
+
+                            no_of_project_dags += 1
+                    except Exception:
+                        print(traceback.format_exc())
 
 
 dags = DAGFactory()
