@@ -1,4 +1,4 @@
 # Extract on-chain data pipeline
 
 ## Pipeline architecture
-![img.png](img.png)
+![img.png](docs/pipeline-schema.png)
