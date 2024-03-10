@@ -20,8 +20,10 @@
 version: '3.9'
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:${AIRFLOW_VERSION}
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  build:
+    context: .
+    dockerfile: Airflow_dockerfile
   depends_on:
     redis:
       condition: service_healthy
@@ -35,6 +37,7 @@ x-airflow-common:
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${POSTGRES_DB_HOST_NAME}/${AIRFLOW_DATABASE_NAME}
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${POSTGRES_DB_HOST_NAME}/${AIRFLOW_DATABASE_NAME}
     AIRFLOW__CELERY__BROKER_URL: redis://:@${REDIS_HOST_NAME}:${REDIS_HOST_INTERNAL_PORT}/0
+    AIRFLOW__WEBSERVER__SECRET_KEY: '${AIRFLOW_WEBSERVER_SECRET_KEY}'
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
@@ -60,6 +63,11 @@ x-airflow-common:
     - ./../../airflow/scripts:/opt/airflow/scripts
     - ./../../airflow/tests:/opt/airflow/tests
     - ./../../airflow/requirements.txt:/opt/airflow/requirements.txt
+    - ./../../spark/jobs:/opt/airflow/spark/jobs
+    - ./../../spark/configs:/opt/airflow/spark/configs
+    - ./../../spark/dependencies:/opt/airflow/spark/dependencies
+    - ./../../spark/tests:/opt/airflow/spark/tests
+    - ./../../spark/packages.zip:/opt/airflow/spark/packages.zip
   networks:
     - ${GLOBAL_NETWORK:-services}
 
@@ -77,7 +85,7 @@ services:
 
   airflow_webserver:
     <<: *airflow-common
-    container_name: ${AIRFLOW_WEBSERVER_HOST_NAME}
+    container_name: airflow_webserver
     command: webserver
     ports:
       - "${AIRFLOW_WEBSERVER_HOST_PORT}:${AIRFLOW_WEBSERVER_HOST_INTERNAL_PORT}"
@@ -92,19 +100,19 @@ services:
 
   airflow_scheduler-1:
     <<: *airflow-common
-    container_name: ${AIRFLOW_SCHEDULER_1_HOST_NAME}
+    container_name: airflow_scheduler-1
     command: scheduler
     restart: always
 
   airflow_worker-1:
     <<: *airflow-common
-    container_name: ${AIRFLOW_WORKER_1_HOST_NAME}
+    container_name: airflow_worker-1
     command: celery worker
     restart: always
 
   airflow_worker-2:
     <<: *airflow-common
-    container_name: ${AIRFLOW_WORKER_2_HOST_NAME}
+    container_name: airflow_worker-2
     command: celery worker -q jobs_queue
     restart: always
 
