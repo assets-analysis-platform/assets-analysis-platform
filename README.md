@@ -1,3 +1,3 @@
 # assets-analysis-platform
 
-AAP provisioning and deployment code
+AAP infrastructure, configs, deployment and provisioning code
