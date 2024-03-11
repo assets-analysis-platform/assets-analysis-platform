@@ -20,7 +20,7 @@
 version: '3.9'
 x-airflow-common:
   &airflow-common
-  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  user: root
   build:
     context: .
     dockerfile: Airflow_dockerfile
@@ -42,7 +42,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__SECRETS__BACKEND: airflow.providers.hashicorp.secrets.vault.VaultBackend
-    AIRFLOW__SECRETS__BACKEND_KWARGS: '{"url":"http://${VAULT_HOST_NAME}:${VAULT_HOST_INTERNAL_PORT}","token":"${VAULT_DEV_ROOT_TOKEN_ID}","variables_path":"${VAULT_VARIABLES_PATH}","mount_point":"${VAULT_MOUNT_POINT}","connections_path":"${VAULT_CONNECTIONS_PATH}"}'
+    AIRFLOW__SECRETS__BACKEND_KWARGS: '{"url":"http://${VAULT_HOST_NAME}:${VAULT_HOST_INTERNAL_PORT}","token":"${VAULT_DEV_ROOT_TOKEN_ID}","mount_point":"${VAULT_MOUNT_POINT}","variables_path":"${VAULT_VARIABLES_PATH}","connections_path":"${VAULT_CONNECTIONS_PATH}"}'
     AIRFLOW__CORE__STORE_DAG_CODE: 'true'
     AIRFLOW__CORE__STORE_SERIALIZED_DAGS: 'true'
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 60
@@ -57,6 +57,7 @@ x-airflow-common:
     AIRFLOW__SMART_SENSOR__SENSORS_ENABLED: NamedHivePartitionSensor, MetastorePartitionSensor, FileExtendedSensor
   volumes:
     - ./containers-data/airflow/logs:/opt/airflow/logs
+    - /var/run/docker.sock:/var/run/docker.sock
     - ./../../airflow/dags:/opt/airflow/dags
     - ./../../airflow/plugins:/opt/airflow/plugins
     - ./../../airflow/projects:/opt/airflow/projects
