@@ -1,4 +1,3 @@
-import airflow
 from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 from airflow.providers.docker.operators.docker import DockerOperator
@@ -35,8 +34,8 @@ def extract_onchain_data_dag():
     ethereum_etl = DockerOperator(
         task_id="ethereum_etl",
         image="eth-etl:latest",
-        docker_url='unix://var/run/docker.sock',
-        network_mode='local_assets_analysis_platform',
+        docker_url="unix://var/run/docker.sock",
+        network_mode="local_assets_analysis_platform",
         command="export_blocks_transactions_and_logs -s {{ ds }} -e {{ ds }} -p {{ var.value.rpc_provider_url }}"
     )
 
