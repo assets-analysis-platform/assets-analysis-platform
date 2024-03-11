@@ -1,4 +1,5 @@
 from airflow.decorators import dag
+from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
@@ -26,6 +27,8 @@ LOG = logging.getLogger(__name__)
 )
 def extract_onchain_data_dag():
 
+    downloaded_data_path = Variable.get("ethereum_etl_downloaded_data_path")
+
     start_processing_info = PythonOperator(
         task_id="start_processing_info",
         provide_context=True,
@@ -35,22 +38,25 @@ def extract_onchain_data_dag():
     ethereum_etl = DockerOperator(
         task_id="ethereum_etl",
         image="eth-etl:latest",
-        docker_url="unix://var/run/docker.sock",
+        docker_url=Variable.get("docker_socket_url"),
         auto_remove="success",
         mounts=[
             Mount(
-                source='C://Users//mkrol//Desktop//test//data//raw//blockchains//ethereum',
-                target='/ethereum-etl/output',
+                source=downloaded_data_path,
+                target="/ethereum-etl/output",
                 type='bind'
             )
         ],
-        network_mode="local_assets_analysis_platform",
-        command="export_blocks_transactions_and_logs -s {{ ds }} -e {{ ds }} -p {{ var.value.rpc_provider_url }}"
+        network_mode=Variable.get("aap_cluster_network_name"),
+        command="export_blocks_transactions_and_logs "
+                "--start {{ ds }} "
+                "--end {{ ds }} "
+                "--provider-uri {{ var.value.rpc_provider_url }}"
     )
 
     end_processing_info = PythonOperator(
         task_id="end_processing_info",
-        python_callable=lambda: LOG.info("Job completed successfully"),
+        python_callable=lambda: LOG.info(downloaded_data_path),
     )
 
     start_processing_info >> ethereum_etl >> end_processing_info

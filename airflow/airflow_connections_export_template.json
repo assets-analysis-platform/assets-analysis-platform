@@ -1,0 +1,9 @@
+{
+  "spark-conn": {
+    "conn_type": "spark",
+    "description": "Spark cluster connection URL",
+    "host": "spark://spark-master",
+    "port": 7077,
+    "extra": "{\n  \"deploy-mode\": \"client\",\n  \"spark-binary\": \"spark-submit\"\n}"
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "aap_cluster_network_name": "local_assets_analysis_platform",
+    "docker_socket_url": "unix://var/run/docker.sock",
+    "ethereum_etl_aws_s3_output_uri": "AWS_S3_URI",
+    "ethereum_etl_downloaded_data_path": "ABSOLUTE_PATH_TO_HOST_FOLDER",
+    "rpc_provider_url": "https://rpc.ankr.com/eth/---SUPER_SECRET_TOKEN---"
+}
