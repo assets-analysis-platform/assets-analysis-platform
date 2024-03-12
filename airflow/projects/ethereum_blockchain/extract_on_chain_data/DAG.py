@@ -2,7 +2,10 @@ from airflow.decorators import dag
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 from airflow.providers.docker.operators.docker import DockerOperator
+from airflow.hooks.S3_hook import S3Hook
+from airflow.utils.task_group import TaskGroup
 from docker.types import Mount
+import os
 from datetime import datetime, timedelta
 import logging
 
@@ -11,14 +14,33 @@ DAG_name = 'ethereum_blockchain_extract_on_chain_data'
 LOG = logging.getLogger(__name__)
 
 
+def upload_to_s3(**kwargs) -> None:
+    hook = S3Hook('aws-s3-conn')
+    key_prefix = ("data/raw/blockchains/ethereum/{directory_name}/date={execution_date}"
+                  .format(directory_name=kwargs['data_name'], execution_date=kwargs['ds']))
+
+    for root, dirs, files in os.walk("/output/{key_prefix}".format(key_prefix=key_prefix)):
+        for file in files:
+            if file.startswith("{file_name}_".format(file_name=kwargs['data_name'])) and file.endswith(".csv"):
+                obj_final_key = os.path.join(key_prefix, file)
+                LOG.info("Uploading file: {}".format(obj_final_key))
+                hook.load_file(
+                    filename="/output/{key}".format(key=obj_final_key),     # name of the file to be uploaded from host
+                    key=obj_final_key,                                      # AWS S3 destination
+                    bucket_name=kwargs['s3_bucket_name']
+                )
+                LOG.info("Finished uploading file: {}".format(obj_final_key))
+
+
 @dag(
     dag_id=DAG_name,
+    # start_date=datetime(2022, 11, 21, 3, 0, 0),
+    start_date=datetime(2024, 3, 11, 3, 0, 0),
     schedule_interval="0 3 * * *",  # Every day at 03:00 a.m
-    start_date=datetime(2022, 11, 21, 3, 0, 0),    # Starting from 21.11.2022, will get data from 21.11.2022 (BTC bottom after the bull market)
-    max_active_runs=1,  # max number of active DAG runs in parallel (limited by external API free plan)
+    max_active_runs=1,              # max number of active DAG runs in parallel
     default_args={
         "owner": "mkrolczyk",
-        "depends_on_past": True,   # when set to True, task instances will run sequentially while relying on the previous task’s schedule to succeed
+        "depends_on_past": True,    # when set to True, task instances will run sequentially while relying on the previous task’s schedule to succeed
         'email_on_failure': False,
         'email_on_retry': False,
         'retries': 3,
@@ -26,14 +48,7 @@ LOG = logging.getLogger(__name__)
     }
 )
 def extract_onchain_data_dag():
-
     downloaded_data_path = Variable.get("ethereum_etl_downloaded_data_path")
-
-    start_processing_info = PythonOperator(
-        task_id="start_processing_info",
-        provide_context=True,
-        python_callable=lambda: LOG.info("Starting Ethereum blockchain ETL job")
-    )
 
     ethereum_etl = DockerOperator(
         task_id="ethereum_etl",
@@ -54,12 +69,45 @@ def extract_onchain_data_dag():
                 "--provider-uri {{ var.value.rpc_provider_url }}"
     )
 
+    with TaskGroup("upload_chain_data_to_s3_in_parallel") as upload_chain_data_to_s3_in_parallel:
+        s3_bucket_name = Variable.get("s3_bucket_name")
+
+        upload_blocks_data = PythonOperator(
+            task_id="upload_blocks_data",
+            provide_context=True,
+            python_callable=upload_to_s3,
+            op_kwargs={
+                'data_name': 'blocks',
+                's3_bucket_name': s3_bucket_name
+            }
+        )
+
+        upload_logs_data = PythonOperator(
+            task_id="upload_logs_data",
+            provide_context=True,
+            python_callable=upload_to_s3,
+            op_kwargs={
+                'data_name': 'logs',
+                's3_bucket_name': s3_bucket_name
+            }
+        )
+
+        upload_transactions_data = PythonOperator(
+            task_id="upload_transactions_data",
+            provide_context=True,
+            python_callable=upload_to_s3,
+            op_kwargs={
+                'data_name': 'transactions',
+                's3_bucket_name': s3_bucket_name
+            }
+        )
+
     end_processing_info = PythonOperator(
         task_id="end_processing_info",
         python_callable=lambda: LOG.info(downloaded_data_path),
     )
 
-    start_processing_info >> ethereum_etl >> end_processing_info
+    ethereum_etl >> upload_chain_data_to_s3_in_parallel >> end_processing_info
 
 
 main_dag = extract_onchain_data_dag()

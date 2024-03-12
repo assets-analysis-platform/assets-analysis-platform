@@ -69,6 +69,7 @@ x-airflow-common:
     - ./../../spark/dependencies:/opt/airflow/spark/dependencies
     - ./../../spark/tests:/opt/airflow/spark/tests
     - ./../../spark/packages.zip:/opt/airflow/spark/packages.zip
+    - ./../../../../../../../Downloads/ethtmpdir/data:/output/data  # must have the same base dir as "ethereum_etl_downloaded_data_path" variable in airflow_variables_export.json
   networks:
     - ${GLOBAL_NETWORK:-services}
 
