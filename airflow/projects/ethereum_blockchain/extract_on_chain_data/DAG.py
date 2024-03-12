@@ -72,7 +72,7 @@ def extract_onchain_data_dag():
     with TaskGroup("upload_chain_data_to_s3_in_parallel") as upload_chain_data_to_s3_in_parallel:
         s3_bucket_name = Variable.get("s3_bucket_name")
 
-        upload_blocks_data = PythonOperator(
+        PythonOperator(
             task_id="upload_blocks_data",
             provide_context=True,
             python_callable=upload_to_s3,
@@ -82,7 +82,7 @@ def extract_onchain_data_dag():
             }
         )
 
-        upload_logs_data = PythonOperator(
+        PythonOperator(
             task_id="upload_logs_data",
             provide_context=True,
             python_callable=upload_to_s3,
@@ -92,7 +92,7 @@ def extract_onchain_data_dag():
             }
         )
 
-        upload_transactions_data = PythonOperator(
+        PythonOperator(
             task_id="upload_transactions_data",
             provide_context=True,
             python_callable=upload_to_s3,
@@ -102,12 +102,12 @@ def extract_onchain_data_dag():
             }
         )
 
-    end_processing_info = PythonOperator(
-        task_id="end_processing_info",
-        python_callable=lambda: LOG.info(downloaded_data_path),
+    env_cleanup = PythonOperator(
+        task_id="env_cleanup",
+        python_callable=lambda: LOG.info("Starting cleanup host environment..."),
     )
 
-    ethereum_etl >> upload_chain_data_to_s3_in_parallel >> end_processing_info
+    ethereum_etl >> upload_chain_data_to_s3_in_parallel >> env_cleanup
 
 
 main_dag = extract_onchain_data_dag()
