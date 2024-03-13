@@ -10,4 +10,4 @@ mkdir --parents $DEST
 echo save| $redis_cli_cmd
 mv $rdb_default_path $DEST
 
-echo $DEST  # return the path to the created backup
+echo $DEST/dump.rdb  # return the path to the created backup
