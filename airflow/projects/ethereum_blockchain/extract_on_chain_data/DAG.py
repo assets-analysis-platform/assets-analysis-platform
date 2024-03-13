@@ -37,7 +37,7 @@ def upload_to_s3(**kwargs) -> None:
     dag_id=DAG_name,
     start_date=datetime(2022, 11, 21, 3, 0, 0),
     schedule_interval="0 3 * * *",  # Every day at 03:00 a.m
-    max_active_runs=1,              # max number of active DAG runs in parallel
+    max_active_runs=1,              # max number of active DAG runs in parallel (currently limited to 1 due to use of a free API plan from the RPC node provider)
     default_args={
         "owner": "mkrolczyk",
         "depends_on_past": True,    # when set to True, task instances will run sequentially while relying on the previous task’s schedule to succeed
