@@ -10,4 +10,10 @@ ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 
 USER airflow
 
-RUN pip install apache-airflow==2.8.2 apache-airflow-providers-apache-spark==4.0.0 pyspark==3.3.2
+RUN pip install \
+    apache-airflow==2.8.2 \
+    pyspark==3.3.2 \
+    python-dotenv==1.0.0 \
+    apache-airflow-providers-apache-spark==4.0.0 \
+    apache-airflow-providers-docker==3.9.2 \
+    apache-airflow-providers-amazon==8.19.0

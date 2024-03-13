@@ -1,0 +1,16 @@
+{
+  "spark-conn": {
+    "conn_type": "spark",
+    "description": "Spark cluster connection URL",
+    "host": "spark://spark-master",
+    "port": 7077,
+    "extra": "{\n  \"deploy-mode\": \"client\",\n  \"spark-binary\": \"spark-submit\"\n}"
+  },
+  "aws-s3-conn": {
+    "conn_type": "aws",
+    "description": "AWS connection",
+    "aws_access_key_id": "ADD_ME",
+    "aws_secret_access_key": "ADD_ME",
+    "extra": "{\"aws_access_key_id\": \"ADD_ME\", \"aws_secret_access_key\": \"ADD_ME\"}"
+  }
+}

@@ -157,10 +157,12 @@ infrastructure/local/containers-data/
 infrastructure/local/.env
 infrastructure/local/license.json
 ######################
-# ignore airflow virtual environment
+# Airflow
 ######################
 airflow/aap_airflow_virtualenv/
 airflow/logs/
+airflow/airflow_variables_export.json
+airflow/airflow_connections_export.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

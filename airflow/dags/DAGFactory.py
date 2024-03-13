@@ -50,6 +50,7 @@ class DAGFactory(object):
 
 
 dags = DAGFactory()
-print(dags.projects)
 
+print("Loading DAGs from projects: {}".format(dags.projects))
 dags.get_modules_from_all_projects()
+print("DAGs has been successfully loaded")
