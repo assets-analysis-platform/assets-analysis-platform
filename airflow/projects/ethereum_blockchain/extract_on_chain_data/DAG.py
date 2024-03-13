@@ -1,13 +1,14 @@
+import os
+import logging
 from airflow.decorators import dag
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.hooks.S3_hook import S3Hook
 from airflow.utils.task_group import TaskGroup
 from docker.types import Mount
-import os
 from datetime import datetime, timedelta
-import logging
 
 DAG_name = 'ethereum_blockchain_extract_on_chain_data'
 
@@ -34,8 +35,7 @@ def upload_to_s3(**kwargs) -> None:
 
 @dag(
     dag_id=DAG_name,
-    # start_date=datetime(2022, 11, 21, 3, 0, 0),
-    start_date=datetime(2024, 3, 11, 3, 0, 0),
+    start_date=datetime(2022, 11, 21, 3, 0, 0),
     schedule_interval="0 3 * * *",  # Every day at 03:00 a.m
     max_active_runs=1,              # max number of active DAG runs in parallel
     default_args={
@@ -48,6 +48,7 @@ def upload_to_s3(**kwargs) -> None:
     }
 )
 def extract_onchain_data_dag():
+
     downloaded_data_path = Variable.get("ethereum_etl_downloaded_data_path")
 
     ethereum_etl = DockerOperator(
@@ -69,7 +70,7 @@ def extract_onchain_data_dag():
                 "--provider-uri {{ var.value.rpc_provider_url }}"
     )
 
-    with TaskGroup("upload_chain_data_to_s3_in_parallel") as upload_chain_data_to_s3_in_parallel:
+    with TaskGroup("upload_chain_data_to_aws_s3") as upload_chain_data_to_aws_s3:
         s3_bucket_name = Variable.get("s3_bucket_name")
 
         PythonOperator(
@@ -102,12 +103,24 @@ def extract_onchain_data_dag():
             }
         )
 
-    env_cleanup = PythonOperator(
-        task_id="env_cleanup",
-        python_callable=lambda: LOG.info("Starting cleanup host environment..."),
-    )
+    with TaskGroup("local_env_cleanup") as local_env_cleanup:
 
-    ethereum_etl >> upload_chain_data_to_s3_in_parallel >> env_cleanup
+        BashOperator(
+            task_id="delete_blocks",
+            bash_command="rm -rf /output/data/raw/blockchains/ethereum/blocks/date={{ ds }}"
+        )
+
+        BashOperator(
+            task_id="delete_logs",
+            bash_command="rm -rf /output/data/raw/blockchains/ethereum/logs/date={{ ds }}"
+        )
+
+        BashOperator(
+            task_id="delete_transactions",
+            bash_command="rm -rf /output/data/raw/blockchains/ethereum/transactions/date={{ ds }}"
+        )
+
+    ethereum_etl >> upload_chain_data_to_aws_s3 >> local_env_cleanup
 
 
 main_dag = extract_onchain_data_dag()
