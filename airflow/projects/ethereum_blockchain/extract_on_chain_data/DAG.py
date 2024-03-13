@@ -103,7 +103,7 @@ def extract_onchain_data_dag():
             }
         )
 
-    with TaskGroup("local_env_cleanup") as local_env_cleanup:
+    with TaskGroup("workspace_cleanup") as workspace_cleanup:
 
         BashOperator(
             task_id="delete_blocks",
@@ -120,7 +120,7 @@ def extract_onchain_data_dag():
             bash_command="rm -rf /output/data/raw/blockchains/ethereum/transactions/date={{ ds }}"
         )
 
-    ethereum_etl >> upload_chain_data_to_aws_s3 >> local_env_cleanup
+    ethereum_etl >> upload_chain_data_to_aws_s3 >> workspace_cleanup
 
 
 main_dag = extract_onchain_data_dag()
