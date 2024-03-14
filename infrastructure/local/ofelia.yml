@@ -11,6 +11,6 @@ services:
     command: daemon --config=/etc/ofelia/config.ini
     volumes:
       - //var/run/docker.sock:/var/run/docker.sock:ro
-      - ./scripts/ofelia/ofelia_config.ini:/etc/ofelia/config.ini:rw
+      - ./../../ofelia/config/scheduler_config.ini:/etc/ofelia/config.ini:rw
     networks:
       - ${GLOBAL_NETWORK:-services}

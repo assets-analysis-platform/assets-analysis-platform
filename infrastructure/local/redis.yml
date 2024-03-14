@@ -20,5 +20,7 @@ services:
       timeout: 30s
       retries: 50
     restart: always
+    volumes:
+      - ./../../projects/redis-store/redis-backup-pipeline/scripts/redis_backup.sh:/redis-backup/scripts/redis_backup.sh:rw
     networks:
       - ${GLOBAL_NETWORK:-services}

@@ -1,7 +1,7 @@
 # Extract on-chain data pipeline
 
 ## Pipeline architecture
-![img.png](docs/architecture.png)
+![architecture.png](docs/architecture.png)
 
 ### Components
 * Airflow scheduler - Manages and monitors the flow of tasks, triggers the task instances whose dependencies have been met.
