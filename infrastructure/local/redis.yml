@@ -2,15 +2,25 @@ version: '3.9'
 
 services:
   redis:
-    image: redis:${REDIS_VERSION}
+    build:
+      context: .
+      dockerfile: Redis_dockerfile
     container_name: ${REDIS_HOST_NAME}
+    user: root
     ports:
       - "${REDIS_HOST_PORT}:${REDIS_HOST_INTERNAL_PORT}"
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      TZ: ${TIME_ZONE}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 30s
       retries: 50
     restart: always
+    volumes:
+      - ./../../projects/redis-store/redis-backup-pipeline/scripts/redis_backup.sh:/redis-backup/scripts/redis_backup.sh:rw
     networks:
       - ${GLOBAL_NETWORK:-services}

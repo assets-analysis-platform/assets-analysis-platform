@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 
-DAG_name = 'sample_project_wordcount'
+DAG_name = 'examples_wordcount'
 
 main_dag = DAG(
     DAG_name,

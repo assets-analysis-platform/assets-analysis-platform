@@ -24,7 +24,7 @@ services:
       - '${POSTGRES_DB_HOST_PORT}:${POSTGRES_DB_INTERNAL_PORT}'
     volumes:
       - ./containers-data/postgresdb/data/storage:/var/lib/postgresql/data/:z
-      - ./lenses_db-init.sh:/docker-entrypoint-initdb.d/lenses_db-init.sh
-      - ./airflow_db-init.sh:/docker-entrypoint-initdb.d/airflow_db-init.sh
+      - ./scripts/postgresql/lenses_db-init.sh:/docker-entrypoint-initdb.d/lenses_db-init.sh
+      - ./scripts/postgresql/airflow_db-init.sh:/docker-entrypoint-initdb.d/airflow_db-init.sh
     networks:
       - ${GLOBAL_NETWORK:-services}
