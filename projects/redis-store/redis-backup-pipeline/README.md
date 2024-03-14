@@ -1,6 +1,6 @@
 # Redis backup
 
-## Backup process architecture
+### Backup process architecture
 ![architecture.png](docs/architecture.png)
 
 ### Components

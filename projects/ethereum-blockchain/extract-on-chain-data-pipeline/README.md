@@ -1,6 +1,6 @@
 # Extract on-chain data pipeline
 
-## Pipeline architecture
+### Pipeline architecture
 ![architecture.png](docs/architecture.png)
 
 ### Components
