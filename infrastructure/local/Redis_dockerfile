@@ -2,5 +2,9 @@ FROM redis:7.2.1
 
 USER root
 RUN apt-get update && \
-    apt-get install -y awscli && \
+    apt-get install -y awscli cron nano man-db && \
     apt-get clean
+
+ADD ./scripts/redis/redis_backup.sh /redis-backup/scripts/redis_backup.sh
+
+RUN chmod +x /redis-backup/scripts/redis_backup.sh

@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 
-DAG_name = 'sample_project_etl_job_with_configs_and_packages'
+DAG_name = 'examples_etl_job_with_configs_and_packages'
 
 main_dag = DAG(
     DAG_name,
