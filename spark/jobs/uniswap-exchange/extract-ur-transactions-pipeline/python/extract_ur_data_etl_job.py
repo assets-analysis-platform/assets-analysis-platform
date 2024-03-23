@@ -13,8 +13,6 @@ Usage:
 import os
 import sys
 import json
-import logging
-
 import requests
 from dotenv import load_dotenv
 from eth_abi.exceptions import InsufficientDataBytes
@@ -26,8 +24,6 @@ from uniswap_universal_router_decoder import RouterCodec
 from pyspark.sql import SparkSession, DataFrame, Row
 from pyspark.sql.functions import col, split
 from web3.exceptions import ABIFunctionNotFound, NoABIFunctionsFound, NoABIEventsFound
-
-# LOG = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -177,200 +173,6 @@ def _get_token_name(redis_client: StrictRedis, web3: Web3, etherscan_api_key: st
             # row_dict['token_in_symbol'] = impl_contract.functions.symbol().call()
             # TODO -> check if it's possible to identify proxy contracts
             return 'ABIFunctionNotFound_proxy_contract', 'ABIFunctionNotFound_proxy_contract'
-
-# def _parse_row(redis_client: StrictRedis, web3: Web3, router_codec: RouterCodec, etherscan_api_key: str, row: Row) -> Row:
-#     # UR transactions tracked commands
-#     CMD_V2_SWAP_EXACT_IN = 'V2_SWAP_EXACT_IN'
-#     CMD_V2_SWAP_EXACT_OUT = 'V2_SWAP_EXACT_OUT'
-#     CMD_V3_SWAP_EXACT_IN = 'V3_SWAP_EXACT_IN'
-#     CMD_V3_SWAP_EXACT_OUT = 'V3_SWAP_EXACT_OUT'
-#     tracked_cmds = (CMD_V2_SWAP_EXACT_IN, CMD_V2_SWAP_EXACT_OUT, CMD_V3_SWAP_EXACT_IN, CMD_V3_SWAP_EXACT_OUT)
-#
-#     row_dict = row.asDict()
-#
-#     decoded_trx_input = router_codec.decode.function_input(row_dict['input'])
-#
-#     filtered_data = [item for item in decoded_trx_input[1]['inputs'] if
-#                      any(cmd_name in str(item[0]) for cmd_name in tracked_cmds)]
-#
-#     function, params = filtered_data[0]
-#
-#     cmd = str(function)
-#
-#     if CMD_V2_SWAP_EXACT_IN in cmd:
-#         row_dict['command_identifier'] = CMD_V2_SWAP_EXACT_IN
-#         row_dict['token_address_in'] = params['path'][0]
-#         row_dict['token_address_out'] = params['path'][1]
-#         row_dict['swap_amount_in'] = params['amountIn']
-#         row_dict['swap_amount_out_min'] = params['amountOutMin']
-#     elif CMD_V2_SWAP_EXACT_OUT in cmd:
-#         row_dict['command_identifier'] = CMD_V2_SWAP_EXACT_OUT
-#         row_dict['token_address_in'] = params['path'][0]
-#         row_dict['token_address_out'] = params['path'][1]
-#         row_dict['swap_amount_in_max'] = params['amountInMax']
-#         row_dict['swap_amount_out'] = params['amountOut']
-#     elif CMD_V3_SWAP_EXACT_IN in cmd:
-#         decoded_path = router_codec.decode.v3_path(CMD_V3_SWAP_EXACT_IN, params['path'])
-#         row_dict['command_identifier'] = CMD_V3_SWAP_EXACT_IN
-#         row_dict['token_address_in'] = decoded_path[0]
-#         row_dict['token_address_out'] = decoded_path[2]
-#         row_dict['swap_amount_in'] = params['amountIn']
-#         row_dict['swap_amount_out_min'] = params['amountOutMin']
-#     elif CMD_V3_SWAP_EXACT_OUT in cmd:
-#         decoded_path = router_codec.decode.v3_path(CMD_V3_SWAP_EXACT_OUT, params['path'])
-#         row_dict['command_identifier'] = CMD_V3_SWAP_EXACT_OUT
-#         row_dict['token_address_in'] = decoded_path[2]
-#         row_dict['token_address_out'] = decoded_path[0]
-#         row_dict['swap_amount_in_max'] = params['amountInMax']
-#         row_dict['swap_amount_out'] = params['amountOut']
-#
-#     token_address_in = row_dict['token_address_in']
-#     token_address_out = row_dict['token_address_out']
-#
-#     contract_from = web3.eth.contract(address=token_address_in, abi=_get_abi(redis_client, token_address_in, etherscan_api_key))
-#     contract_to = web3.eth.contract(address=token_address_out, abi=_get_abi(redis_client, token_address_out, etherscan_api_key))
-#
-#     row_dict['token_in_name'] = contract_from.functions.name().call()
-#     row_dict['token_in_symbol'] = contract_from.functions.symbol().call()
-#     row_dict['token_out_name'] = contract_to.functions.name().call()
-#     row_dict['token_out_symbol'] = contract_to.functions.symbol().call()
-#
-#     address = web3.to_checksum_address(row_dict['event_src_addr'])
-#     address_abi = _get_abi(redis_client, address, etherscan_api_key)
-#
-#     pool_contract = web3.eth.contract(address=address, abi=address_abi)
-#
-#     decoded_event = pool_contract.events.Swap().process_log({
-#         'data': row_dict['data'],
-#         'topics': [HexBytes(topic) for topic in row_dict['topics'].split(",")],
-#         'logIndex': row_dict['log_index'],
-#         'transactionIndex': row_dict['transaction_index'],
-#         'transactionHash': row_dict['transaction_hash'],
-#         'address': row_dict['event_src_addr'],
-#         'blockHash': row_dict['block_hash'],
-#         'blockNumber': row_dict['block_number']
-#     })
-#
-#     cmd_identifier = row_dict['command_identifier']
-#
-#     if cmd_identifier in (CMD_V2_SWAP_EXACT_IN, CMD_V2_SWAP_EXACT_OUT):
-#         row_dict['v2_amount0In'] = decoded_event['args']['amount0In']
-#         row_dict['v2_amount1In'] = decoded_event['args']['amount1In']
-#         row_dict['v2_amount0Out'] = decoded_event['args']['amount0Out']
-#         row_dict['v2_amount1Out'] = decoded_event['args']['amount1Out']
-#     elif cmd_identifier in (CMD_V3_SWAP_EXACT_IN, CMD_V3_SWAP_EXACT_OUT):
-#         row_dict['v3_amount0'] = decoded_event['args']['amount0']
-#         row_dict['v3_amount1'] = decoded_event['args']['amount1']
-#         row_dict['v3_sqrtPriceX96'] = decoded_event['args']['sqrtPriceX96']
-#         row_dict['v3_liquidity'] = decoded_event['args']['liquidity']
-#         row_dict['v3_tick'] = decoded_event['args']['tick']
-#
-#     return Row(**row_dict)
-
-# -----------------------------------------------------------------------------------------------------------------------------
-# @udf(returnType=StringType())
-# def decode_input(transaction_input: str, tracked_cmds):
-#     rpc_provider = Web3.HTTPProvider(os.getenv('RPC_INFURA_HTTPS_ENDPOINT'))
-#     web3 = Web3(provider=rpc_provider)
-#     router_codec = RouterCodec(w3=web3)
-#     decoded_trx_input = router_codec.decode.function_input(transaction_input)
-#
-#     filtered_data = [item for item in decoded_trx_input[1]['inputs'] if
-#                      any(cmd_name in str(item[0]) for cmd_name in tracked_cmds)]
-#
-#     function, params = filtered_data[0]
-#
-#     return function, params
-
-# def _parse_row(redis_client: StrictRedis, web3: Web3, router_codec: RouterCodec, etherscan_api_key: str, row: Row) -> Row:
-#     # # UR transactions tracked commands
-#     # CMD_V2_SWAP_EXACT_IN = 'V2_SWAP_EXACT_IN'
-#     # CMD_V2_SWAP_EXACT_OUT = 'V2_SWAP_EXACT_OUT'
-#     # CMD_V3_SWAP_EXACT_IN = 'V3_SWAP_EXACT_IN'
-#     # CMD_V3_SWAP_EXACT_OUT = 'V3_SWAP_EXACT_OUT'
-#     # tracked_cmds = (CMD_V2_SWAP_EXACT_IN, CMD_V2_SWAP_EXACT_OUT, CMD_V3_SWAP_EXACT_IN, CMD_V3_SWAP_EXACT_OUT)
-#
-#     # row_dict = row.asDict()
-#
-#     # decoded_trx_input = router_codec.decode.function_input(row_dict['input'])
-#     #
-#     # filtered_data = [item for item in decoded_trx_input[1]['inputs'] if
-#     #                  any(cmd_name in str(item[0]) for cmd_name in tracked_cmds)]
-#     #
-#     # function, params = filtered_data[0]
-#
-#     # cmd = str(function)
-#
-#     if CMD_V2_SWAP_EXACT_IN in cmd:
-#         row_dict['command_identifier'] = CMD_V2_SWAP_EXACT_IN
-#         row_dict['token_address_in'] = params['path'][0]
-#         row_dict['token_address_out'] = params['path'][1]
-#         row_dict['swap_amount_in'] = params['amountIn']
-#         row_dict['swap_amount_out_min'] = params['amountOutMin']
-#     elif CMD_V2_SWAP_EXACT_OUT in cmd:
-#         row_dict['command_identifier'] = CMD_V2_SWAP_EXACT_OUT
-#         row_dict['token_address_in'] = params['path'][0]
-#         row_dict['token_address_out'] = params['path'][1]
-#         row_dict['swap_amount_in_max'] = params['amountInMax']
-#         row_dict['swap_amount_out'] = params['amountOut']
-#     elif CMD_V3_SWAP_EXACT_IN in cmd:
-#         decoded_path = router_codec.decode.v3_path(CMD_V3_SWAP_EXACT_IN, params['path'])
-#         row_dict['command_identifier'] = CMD_V3_SWAP_EXACT_IN
-#         row_dict['token_address_in'] = decoded_path[0]
-#         row_dict['token_address_out'] = decoded_path[2]
-#         row_dict['swap_amount_in'] = params['amountIn']
-#         row_dict['swap_amount_out_min'] = params['amountOutMin']
-#     elif CMD_V3_SWAP_EXACT_OUT in cmd:
-#         decoded_path = router_codec.decode.v3_path(CMD_V3_SWAP_EXACT_OUT, params['path'])
-#         row_dict['command_identifier'] = CMD_V3_SWAP_EXACT_OUT
-#         row_dict['token_address_in'] = decoded_path[2]
-#         row_dict['token_address_out'] = decoded_path[0]
-#         row_dict['swap_amount_in_max'] = params['amountInMax']
-#         row_dict['swap_amount_out'] = params['amountOut']
-#
-#     token_address_in = row_dict['token_address_in']
-#     token_address_out = row_dict['token_address_out']
-#
-#     contract_from = web3.eth.contract(address=token_address_in, abi=_get_abi(redis_client, token_address_in, etherscan_api_key))
-#     contract_to = web3.eth.contract(address=token_address_out, abi=_get_abi(redis_client, token_address_out, etherscan_api_key))
-#
-#     row_dict['token_in_name'] = contract_from.functions.name().call()
-#     row_dict['token_in_symbol'] = contract_from.functions.symbol().call()
-#     row_dict['token_out_name'] = contract_to.functions.name().call()
-#     row_dict['token_out_symbol'] = contract_to.functions.symbol().call()
-#
-#     address = web3.to_checksum_address(row_dict['event_src_addr'])
-#     address_abi = _get_abi(redis_client, address, etherscan_api_key)
-#
-#     pool_contract = web3.eth.contract(address=address, abi=address_abi)
-#
-#     decoded_event = pool_contract.events.Swap().process_log({
-#         'data': row_dict['data'],
-#         'topics': [HexBytes(topic) for topic in row_dict['topics'].split(",")],
-#         'logIndex': row_dict['log_index'],
-#         'transactionIndex': row_dict['transaction_index'],
-#         'transactionHash': row_dict['transaction_hash'],
-#         'address': row_dict['event_src_addr'],
-#         'blockHash': row_dict['block_hash'],
-#         'blockNumber': row_dict['block_number']
-#     })
-#
-#     cmd_identifier = row_dict['command_identifier']
-#
-#     if cmd_identifier in (CMD_V2_SWAP_EXACT_IN, CMD_V2_SWAP_EXACT_OUT):
-#         row_dict['v2_amount0In'] = decoded_event['args']['amount0In']
-#         row_dict['v2_amount1In'] = decoded_event['args']['amount1In']
-#         row_dict['v2_amount0Out'] = decoded_event['args']['amount0Out']
-#         row_dict['v2_amount1Out'] = decoded_event['args']['amount1Out']
-#     elif cmd_identifier in (CMD_V3_SWAP_EXACT_IN, CMD_V3_SWAP_EXACT_OUT):
-#         row_dict['v3_amount0'] = decoded_event['args']['amount0']
-#         row_dict['v3_amount1'] = decoded_event['args']['amount1']
-#         row_dict['v3_sqrtPriceX96'] = decoded_event['args']['sqrtPriceX96']
-#         row_dict['v3_liquidity'] = decoded_event['args']['liquidity']
-#         row_dict['v3_tick'] = decoded_event['args']['tick']
-#
-#     return Row(**row_dict)
-# -----------------------------------------------------------------------------------------------------------------------------
 
 
 def _parse_row(redis_client, web3, router_codec, etherscan_api_key, row: Row):
@@ -539,17 +341,15 @@ def _parse_row(redis_client, web3, router_codec, etherscan_api_key, row: Row):
         row_dict['v3_liquidity'] = None
         row_dict['v3_tick'] = None
 
-    redis_client.close()
     return Row(**row_dict)
 
 
 def _parse_partition(iterator):
-    redis_client = StrictRedis(host=os.getenv("REDIS_HOST"), port=int(os.getenv("REDIS_PORT")),
-                               db=int(os.getenv("REDIS_DB")))
+    redis_client = StrictRedis(host=os.getenv("REDIS_HOST"), port=int(os.getenv("REDIS_PORT")), db=int(os.getenv("REDIS_DB")))
     rpc_provider = Web3.HTTPProvider(os.getenv('RPC_INFURA_HTTPS_ENDPOINT'))
-    etherscan_api_key = os.getenv("ETHERSCAN_API_KEY")
     web3 = Web3(provider=rpc_provider)
     router_codec = RouterCodec(w3=web3)
+    etherscan_api_key = os.getenv("ETHERSCAN_API_KEY")
 
     for row in iterator:
         yield _parse_row(redis_client, web3, router_codec, etherscan_api_key, row)
@@ -588,12 +388,6 @@ def retrieve_ur_transactions(transactions_df: DataFrame, logs_df: DataFrame) -> 
                               .withColumn('topic', split(logs_df['topics'], ",").getItem(0))
                               .filter(col('topic').isin(TRACKED_EVENTS))
                               .withColumnRenamed('address', 'event_src_addr'))
-
-    # result = (eth_blockchain_transactions_df
-    #           .join(eth_blockchain_logs_df, "transaction_hash")
-    #           .cache()
-    #           .rdd.map(_parse_row)
-    #           .toDF())
 
     result = (eth_blockchain_transactions_df
               .join(eth_blockchain_logs_df, "transaction_hash")
