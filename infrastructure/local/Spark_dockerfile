@@ -1,4 +1,4 @@
-FROM apache/airflow:2.8.2-python3.9
+FROM bitnami/spark:3.3.2
 
 USER root
 RUN apt-get update && \
@@ -8,16 +8,10 @@ RUN apt-get update && \
 # Set JAVA_HOME environment variable
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 
-USER airflow
-
 RUN pip install \
-    apache-airflow==2.8.2 \
     pyspark==3.3.2 \
     python-dotenv==1.0.0 \
     web3==6.11.3 \
     pipenv==2023.12.1 \
     redis==5.0.3 \
-    uniswap-universal-router-decoder==1.0.0 \
-    apache-airflow-providers-apache-spark==4.0.0 \
-    apache-airflow-providers-docker==3.9.2 \
-    apache-airflow-providers-amazon==8.19.0
+    uniswap-universal-router-decoder==1.0.0
