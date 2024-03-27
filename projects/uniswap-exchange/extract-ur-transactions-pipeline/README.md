@@ -11,7 +11,7 @@ about transactions from the past.
 ### Components
 * Airflow scheduler - Manages and monitors the flow of tasks, triggers the task instances whose dependencies have been met.
 * Apache Spark cluster - Data processing framework used to process Ethereum Blockchain data in a distributed manner.
-* Redis (Remote Dictionary Server) - In-memory data store, used by Spark cluster for retrieving Ethereum contracts ABI (Application Binary Interface).
+* Redis (Remote Dictionary Server) - In-memory data store, used by Spark cluster for retrieving Ethereum contracts ABI (Application Binary Interface) and for caching repeatable operations.
 * Etherscan API - Used for smart contract ABI retrieving if ABI is not present in Redis cache.
 The response from the server (missing ABI) is automatically added to the Redis to avoid future requests for the same ABI.
 
