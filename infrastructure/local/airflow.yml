@@ -123,6 +123,12 @@ services:
     command: celery worker -q jobs_queue
     restart: always
 
+#  airflow_worker-3:
+#    <<: *airflow-common
+#    container_name: airflow_worker-3
+#    command: celery worker -q jobs_queue
+#    restart: always
+
   flower:
     <<: *airflow-common
     container_name: ${FLOWER_HOST_NAME}
