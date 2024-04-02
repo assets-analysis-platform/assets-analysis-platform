@@ -18,7 +18,7 @@ LOG = logging.getLogger(__name__)
 def upload_to_s3(**kwargs) -> None:
     hook = S3Hook('aws-s3-conn')
     key_prefix = ("data/raw/blockchains/ethereum/{directory_name}/date={execution_date}"
-                  .format(directory_name=kwargs['data_name'], execution_date=kwargs['ds']))
+                  .format(directory_name=kwargs['data_name'], execution_date=kwargs['yesterday_ds']))
 
     for root, dirs, files in os.walk("/output/{key_prefix}".format(key_prefix=key_prefix)):
         for file in files:
@@ -35,7 +35,7 @@ def upload_to_s3(**kwargs) -> None:
 
 @dag(
     dag_id=DAG_name,
-    start_date=datetime(2022, 11, 21, 3, 0, 0),
+    start_date=datetime(2023, 5, 9, 3, 0, 0),
     schedule_interval="0 3 * * *",  # Every day at 03:00 a.m
     max_active_runs=1,              # max number of active DAG runs in parallel (currently limited to 1 due to use of a free API plan from the RPC node provider)
     default_args={
@@ -65,8 +65,8 @@ def extract_onchain_data_dag():
         ],
         network_mode=Variable.get("aap_cluster_network_name"),
         command="export_blocks_transactions_and_logs "
-                "--start {{ ds }} "
-                "--end {{ ds }} "
+                "--start {{ yesterday_ds }} "
+                "--end {{ yesterday_ds }} "
                 "--provider-uri {{ var.value.rpc_provider_url }}"
     )
 
@@ -107,17 +107,17 @@ def extract_onchain_data_dag():
 
         BashOperator(
             task_id="delete_blocks",
-            bash_command="rm -rf /output/data/raw/blockchains/ethereum/blocks/date={{ ds }}"
+            bash_command="rm -rf /output/data/raw/blockchains/ethereum/blocks/date={{ yesterday_ds }}"
         )
 
         BashOperator(
             task_id="delete_logs",
-            bash_command="rm -rf /output/data/raw/blockchains/ethereum/logs/date={{ ds }}"
+            bash_command="rm -rf /output/data/raw/blockchains/ethereum/logs/date={{ yesterday_ds }}"
         )
 
         BashOperator(
             task_id="delete_transactions",
-            bash_command="rm -rf /output/data/raw/blockchains/ethereum/transactions/date={{ ds }}"
+            bash_command="rm -rf /output/data/raw/blockchains/ethereum/transactions/date={{ yesterday_ds }}"
         )
 
     ethereum_etl >> upload_chain_data_to_aws_s3 >> workspace_cleanup

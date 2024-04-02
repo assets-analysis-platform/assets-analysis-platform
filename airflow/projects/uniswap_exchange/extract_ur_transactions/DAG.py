@@ -13,7 +13,7 @@ LOG = logging.getLogger(__name__)
 def prepare_args_for_spark(**kwargs):
 
     ti = kwargs['ti']
-    transactions_date = kwargs['ds']
+    transactions_date = kwargs['yesterday_ds']
 
     s3_bucket_name = Variable.get("s3_bucket_name")
     input_base_uri = f's3a://{s3_bucket_name}/data/raw/blockchains/ethereum'
@@ -26,9 +26,7 @@ def prepare_args_for_spark(**kwargs):
 
 @dag(
     dag_id=DAG_name,
-    # start_date=datetime(2022, 11, 21, 4, 0, 0),   TODO -> SET CORRECT start_date
-    start_date=datetime(2024, 3, 14, 4, 0, 0),
-    end_date=datetime(2024, 3, 16, 4, 0, 0),
+    start_date=datetime(2023, 5, 9, 4, 0, 0),
     schedule_interval="0 4 * * *",  # Every day at 04:00 a.m
     max_active_runs=1,              # max number of active DAG runs in parallel
     default_args={
