@@ -16,6 +16,7 @@ import json
 import requests
 from dotenv import load_dotenv
 from eth_abi.exceptions import InsufficientDataBytes
+from pyspark.sql.types import StructField, StringType, StructType
 from web3 import Web3
 from redis import StrictRedis
 from hexbytes import HexBytes
@@ -422,6 +423,43 @@ def retrieve_ur_transactions(transactions_df: DataFrame, logs_df: DataFrame) -> 
     eth_blockchain_logs_df_columns = ['log_index', 'transaction_hash', 'transaction_index', 'block_hash',
                                       'block_number', 'address', 'data', 'topics']
 
+    schema = StructType([StructField('transaction_hash', StringType(), False),
+                         StructField('sender_address', StringType(), False),
+                         StructField('value', StringType(), True),
+                         StructField('gas', StringType(), True),
+                         StructField('gas_price', StringType(), True),
+                         StructField('block_timestamp', StringType(), False),
+                         StructField('max_fee_per_gas', StringType(), True),
+                         StructField('max_priority_fee_per_gas', StringType(), True),
+                         StructField('transaction_type', StringType(), True),
+                         StructField('log_index', StringType(), False),
+                         StructField('transaction_index', StringType(), False),
+                         StructField('block_hash', StringType(), False),
+                         StructField('block_number', StringType(), False),
+                         StructField('pool_address', StringType(), False),
+                         StructField('event_type', StringType(), False),
+                         StructField('transaction_swap_number', StringType(), False),
+                         StructField('event_type_cmd_identifier', StringType(), False),
+                         StructField('swap_amount_in', StringType(), True),
+                         StructField('swap_amount_in_max', StringType(), True),
+                         StructField('swap_amount_out', StringType(), True),
+                         StructField('swap_amount_out_min', StringType(), True),
+                         StructField('v2_amount0In', StringType(), True),
+                         StructField('v2_amount1In', StringType(), True),
+                         StructField('v2_amount0Out', StringType(), True),
+                         StructField('v2_amount1Out', StringType(), True),
+                         StructField('v3_amount0', StringType(), True),
+                         StructField('v3_amount1', StringType(), True),
+                         StructField('v3_sqrtPriceX96', StringType(), True),
+                         StructField('v3_liquidity', StringType(), True),
+                         StructField('v3_tick', StringType(), True),
+                         StructField('token_in_address', StringType(), True),
+                         StructField('token_in_name', StringType(), True),
+                         StructField('token_in_symbol', StringType(), True),
+                         StructField('token_out_address', StringType(), True),
+                         StructField('token_out_name', StringType(), True),
+                         StructField('token_out_symbol', StringType(), True), ])
+
     eth_blockchain_transactions_df = (transactions_df
                                       .select(*[col(column) for column in eth_blockchain_transactions_df_columns])
                                       .filter(col('to_address').isin(UNIVERSAL_ROUTER_CONTRACT_ADDRESS))
@@ -440,9 +478,9 @@ def retrieve_ur_transactions(transactions_df: DataFrame, logs_df: DataFrame) -> 
               .join(eth_blockchain_logs_df, "transaction_hash")
               .cache()
               .rdd.mapPartitions(_parse_partition)
-              .toDF())
+              .toDF(schema=schema))
 
-    # result.show(150, truncate=False)
+    result.show(150, truncate=False)
 
     return result
 
