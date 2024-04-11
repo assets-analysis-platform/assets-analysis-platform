@@ -21,13 +21,12 @@ def prepare_args_for_spark(**kwargs):
 
     ti.xcom_push(key='s3_eth_transactions_uri', value=f'{input_base_uri}/transactions/date={transactions_date}/transactions_*.csv')
     ti.xcom_push(key='s3_eth_logs_uri', value=f'{input_base_uri}/logs/date={transactions_date}/logs_*.csv')
-    ti.xcom_push(key='s3_output_uri', value=f'{output_base_uri}/date={transactions_date}/ur_transactions_{transactions_date}.csv')
+    ti.xcom_push(key='s3_output_uri', value=f'{output_base_uri}/date={transactions_date}/ur_transactions_{transactions_date}')
 
 
 @dag(
     dag_id=DAG_name,
-    # start_date=datetime(2023, 5, 9, 4, 0, 0),
-    start_date=datetime(2024, 3, 15, 4, 0, 0),
+    start_date=datetime(2023, 5, 9, 4, 0, 0),
     schedule_interval="0 4 * * *",  # Every day at 04:00 a.m
     max_active_runs=1,              # max number of active DAG runs in parallel
     default_args={

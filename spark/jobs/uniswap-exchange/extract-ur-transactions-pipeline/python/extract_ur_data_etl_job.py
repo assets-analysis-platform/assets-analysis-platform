@@ -476,8 +476,6 @@ def retrieve_ur_transactions(transactions_df: DataFrame, logs_df: DataFrame) -> 
               .rdd.mapPartitions(_parse_partition)
               .toDF(schema=schema))
 
-    # result.show(150, truncate=False)
-
     return result
 
 

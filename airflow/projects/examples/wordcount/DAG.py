@@ -11,7 +11,8 @@ main_dag = DAG(
         "owner": "Marcin Krolczyk",
         "start_date": airflow.utils.dates.days_ago(1)
     },
-    schedule_interval="@daily"
+    schedule_interval="@daily",
+    is_active=False
 )
 
 start = PythonOperator(
