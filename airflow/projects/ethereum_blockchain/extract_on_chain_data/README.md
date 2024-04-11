@@ -1,4 +1,4 @@
 # extract_on_chain_data
 
-## Graph
+## Graph View
 ![airflow-graph.png](docs/airflow-graph.png)

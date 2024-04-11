@@ -55,6 +55,9 @@ x-airflow-common:
     AIRFLOW__SMART_SENSOR__SHARD_CODE_UPPER_LIMIT: 10000
     AIRFLOW__SMART_SENSOR__SHARDS: 3
     AIRFLOW__SMART_SENSOR__SENSORS_ENABLED: NamedHivePartitionSensor, MetastorePartitionSensor, FileExtendedSensor
+  env_file:
+    - ./.env
+    - ./../../spark/.env
   volumes:
     - ./containers-data/airflow/logs:/opt/airflow/logs
     - /var/run/docker.sock:/var/run/docker.sock
@@ -69,6 +72,8 @@ x-airflow-common:
     - ./../../spark/dependencies:/opt/airflow/spark/dependencies
     - ./../../spark/tests:/opt/airflow/spark/tests
     - ./../../spark/packages.zip:/opt/airflow/spark/packages.zip
+    - ./../../spark/build_dependencies.sh:/opt/airflow/spark/build_dependencies.sh
+    - ./../../spark/Pipfile.lock:/opt/airflow/spark/Pipfile.lock
     - ./../../../../../../../Downloads/ethtmpdir/data:/output/data  # must have the same base dir as "ethereum_etl_downloaded_data_path" variable in airflow_variables_export.json
   networks:
     - ${GLOBAL_NETWORK:-services}
@@ -117,6 +122,12 @@ services:
     container_name: airflow_worker-2
     command: celery worker -q jobs_queue
     restart: always
+
+#  airflow_worker-3:
+#    <<: *airflow-common
+#    container_name: airflow_worker-3
+#    command: celery worker -q jobs_queue
+#    restart: always
 
   flower:
     <<: *airflow-common

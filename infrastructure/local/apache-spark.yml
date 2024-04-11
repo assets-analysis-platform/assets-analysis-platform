@@ -2,7 +2,10 @@ version: '3.9'
 
 x-spark-common:
   &spark-common
-  image: bitnami/spark:${SPARK_VERSION}
+  user: root
+  build:
+    context: .
+    dockerfile: Spark_dockerfile
   volumes:
     - ./../../spark/jobs:/opt/bitnami/spark/jobs
     - ./../../spark/configs:/opt/bitnami/spark/configs
@@ -11,6 +14,7 @@ x-spark-common:
     - ./../../spark/packages.zip:/opt/bitnami/spark/packages.zip
   env_file:
     - ./.env
+    - ./../../spark/.env
   platform: linux/amd64
   networks:
     - ${GLOBAL_NETWORK:-services}
@@ -23,6 +27,7 @@ services:
     ports:
       - "7077:7077"
       - "9090:8080"
+#      - "4040:4040"
   spark-worker-1:
     <<: *spark-common
     container_name: spark-worker-1
@@ -32,7 +37,7 @@ services:
     environment:
       SPARK_MODE: worker
       SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 3g
+      SPARK_WORKER_MEMORY: 4g
       SPARK_MASTER_URL: spark://spark-master:7077
   spark-worker-2:
     <<: *spark-common
@@ -43,7 +48,7 @@ services:
     environment:
       SPARK_MODE: worker
       SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 3g
+      SPARK_WORKER_MEMORY: 4g
       SPARK_MASTER_URL: spark://spark-master:7077
   spark-worker-3:
     <<: *spark-common
@@ -54,5 +59,5 @@ services:
     environment:
       SPARK_MODE: worker
       SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 3g
+      SPARK_WORKER_MEMORY: 4g
       SPARK_MASTER_URL: spark://spark-master:7077

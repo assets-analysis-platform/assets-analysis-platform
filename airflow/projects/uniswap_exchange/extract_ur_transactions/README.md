@@ -1,4 +1,4 @@
 # extract_ur_transactions
 
-## Graph
-ADD ME
+## Graph View
+![airflow-graph.png](docs/airflow-graph.png)
