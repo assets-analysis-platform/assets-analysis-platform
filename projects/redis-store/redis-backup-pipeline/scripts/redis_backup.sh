@@ -25,7 +25,7 @@ mkdir --parents $DEST
 
 # create backup
 echo save| $REDIS_CLI
-mv $RDB_BACKUP_DUMP_PATH $DEST
+cp $RDB_BACKUP_DUMP_PATH $DEST
 
 # upload snapshot to AWS S3
 RDB_FILE=$DEST/dump.rdb                                           # dump.rdb to be uploaded

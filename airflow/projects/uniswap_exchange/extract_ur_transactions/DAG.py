@@ -26,7 +26,9 @@ def prepare_args_for_spark(**kwargs):
 
 @dag(
     dag_id=DAG_name,
-    start_date=datetime(2023, 5, 9, 4, 0, 0),
+    # start_date=datetime(2023, 5, 9, 4, 0, 0),
+    start_date=datetime(2023, 7, 16, 4, 0, 0),
+    end_date=datetime(2023, 7, 19, 4, 0, 0),
     schedule_interval="0 4 * * *",  # Every day at 04:00 a.m
     max_active_runs=1,              # max number of active DAG runs in parallel
     default_args={
@@ -50,7 +52,6 @@ def extract_uniswap_ur_transactions_dag():
         task_id="extract_ur_transactions_spark_job",
         conn_id="spark-conn",
         py_files="spark/packages.zip",
-        files="spark/configs/uniswap-exchange/extract-ur-transactions-pipeline/extract_ur_data_etl_job_config.json",
         packages='org.apache.spark:spark-hadoop-cloud_2.12:3.3.2',
         application="spark/jobs/uniswap-exchange/extract-ur-transactions-pipeline/python/extract_ur_data_etl_job.py",
         application_args=[

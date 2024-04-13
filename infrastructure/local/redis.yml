@@ -13,6 +13,8 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      ALLOW_EMPTY_PASSWORD: 'yes' # only for dev env
+      DISABLE_COMMANDS: 'FLUSHDB,FLUSHALL,CONFIG'
       TZ: ${TIME_ZONE}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -21,6 +23,7 @@ services:
       retries: 50
     restart: always
     volumes:
+      - ./containers-data/redis/data:/data
       - ./../../projects/redis-store/redis-backup-pipeline/scripts/redis_backup.sh:/redis-backup/scripts/redis_backup.sh:rw
     networks:
       - ${GLOBAL_NETWORK:-services}

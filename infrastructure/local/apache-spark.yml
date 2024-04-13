@@ -24,6 +24,8 @@ services:
     <<: *spark-common
     container_name: spark-master
     command: bin/spark-class org.apache.spark.deploy.master.Master
+    depends_on:
+      - redis
     ports:
       - "7077:7077"
       - "9090:8080"
@@ -34,6 +36,7 @@ services:
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
+      - redis
     environment:
       SPARK_MODE: worker
       SPARK_WORKER_CORES: 2
@@ -45,6 +48,7 @@ services:
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
+      - redis
     environment:
       SPARK_MODE: worker
       SPARK_WORKER_CORES: 2
@@ -56,6 +60,7 @@ services:
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
+      - redis
     environment:
       SPARK_MODE: worker
       SPARK_WORKER_CORES: 2
