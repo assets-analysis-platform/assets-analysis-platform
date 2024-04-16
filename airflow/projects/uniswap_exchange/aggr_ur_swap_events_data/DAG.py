@@ -58,7 +58,7 @@ def aggr_ur_swap_events_data_dag():
         conn_id="spark-conn",
         py_files="spark/packages.zip",
         packages='org.apache.spark:spark-hadoop-cloud_2.12:3.3.2',
-        application="spark/jobs/uniswap-exchange/extract-ur-transactions-pipeline/python/aggr_ur_swap_events_data_etl_job.py",
+        application="spark/jobs/uniswap-exchange/aggr-ur-swap-events-data-job/python/aggr_ur_swap_events_data_etl_job.py",
         application_args=[
             "{{ ti.xcom_pull(key='input_csv_files_uris') }}",
             "{{ ti.xcom_pull(key='s3_output_uri') }}",

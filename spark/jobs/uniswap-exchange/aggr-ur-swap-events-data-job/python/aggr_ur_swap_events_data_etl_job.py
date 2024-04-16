@@ -7,7 +7,7 @@ Usage:
     --master spark://localhost:7077 \
     --py-files packages.zip \
     --files configs/aggr_ur_data_etl_config.json \
-    jobs/aggr_ur_swap_events_data_etl_job.py <input_csv_uri_1,input_csv_uri_2,input_csv_uri_3,input_csv_uri_xx> <output_uri_for_csv_with_success_rows> <output_uri_for_csv_with_failed_rows>
+    jobs/uniswap-exchange/aggr-ur-swap-events-data-job/python/aggr_ur_swap_events_data_etl_job.py <input_csv_uri_1,input_csv_uri_2,input_csv_uri_3,input_csv_uri_xx> <output_uri_for_csv_with_success_rows> <output_uri_for_csv_with_failed_rows>
 """
 
 import os

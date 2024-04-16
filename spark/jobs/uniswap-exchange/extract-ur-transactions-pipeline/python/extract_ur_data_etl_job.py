@@ -7,7 +7,7 @@ Usage:
     --master spark://localhost:7077 \
     --py-files packages.zip \
     --files configs/extract_ur_data_etl_config.json \
-    jobs/extract_ur_data_etl_job.py <eth_transactions.csv> <eth_logs.csv> <output_path>
+    jobs/uniswap-exchange/extract-ur-transactions-pipeline/python/extract_ur_data_etl_job.py <eth_transactions.csv> <eth_logs.csv> <output_path>
 """
 
 import os
@@ -162,13 +162,50 @@ def _get_uniswap_v3_default_abi() -> str:
     return '[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"int24","name":"tickLower","type":"int24"},{"indexed":true,"internalType":"int24","name":"tickUpper","type":"int24"},{"indexed":false,"internalType":"uint128","name":"amount","type":"uint128"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"}],"name":"Burn","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"address","name":"recipient","type":"address"},{"indexed":true,"internalType":"int24","name":"tickLower","type":"int24"},{"indexed":true,"internalType":"int24","name":"tickUpper","type":"int24"},{"indexed":false,"internalType":"uint128","name":"amount0","type":"uint128"},{"indexed":false,"internalType":"uint128","name":"amount1","type":"uint128"}],"name":"Collect","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint128","name":"amount0","type":"uint128"},{"indexed":false,"internalType":"uint128","name":"amount1","type":"uint128"}],"name":"CollectProtocol","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"paid0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"paid1","type":"uint256"}],"name":"Flash","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint16","name":"observationCardinalityNextOld","type":"uint16"},{"indexed":false,"internalType":"uint16","name":"observationCardinalityNextNew","type":"uint16"}],"name":"IncreaseObservationCardinalityNext","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint160","name":"sqrtPriceX96","type":"uint160"},{"indexed":false,"internalType":"int24","name":"tick","type":"int24"}],"name":"Initialize","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"int24","name":"tickLower","type":"int24"},{"indexed":true,"internalType":"int24","name":"tickUpper","type":"int24"},{"indexed":false,"internalType":"uint128","name":"amount","type":"uint128"},{"indexed":false,"internalType":"uint256","name":"amount0","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount1","type":"uint256"}],"name":"Mint","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint8","name":"feeProtocol0Old","type":"uint8"},{"indexed":false,"internalType":"uint8","name":"feeProtocol1Old","type":"uint8"},{"indexed":false,"internalType":"uint8","name":"feeProtocol0New","type":"uint8"},{"indexed":false,"internalType":"uint8","name":"feeProtocol1New","type":"uint8"}],"name":"SetFeeProtocol","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"recipient","type":"address"},{"indexed":false,"internalType":"int256","name":"amount0","type":"int256"},{"indexed":false,"internalType":"int256","name":"amount1","type":"int256"},{"indexed":false,"internalType":"uint160","name":"sqrtPriceX96","type":"uint160"},{"indexed":false,"internalType":"uint128","name":"liquidity","type":"uint128"},{"indexed":false,"internalType":"int24","name":"tick","type":"int24"}],"name":"Swap","type":"event"},{"inputs":[{"internalType":"int24","name":"tickLower","type":"int24"},{"internalType":"int24","name":"tickUpper","type":"int24"},{"internalType":"uint128","name":"amount","type":"uint128"}],"name":"burn","outputs":[{"internalType":"uint256","name":"amount0","type":"uint256"},{"internalType":"uint256","name":"amount1","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"int24","name":"tickLower","type":"int24"},{"internalType":"int24","name":"tickUpper","type":"int24"},{"internalType":"uint128","name":"amount0Requested","type":"uint128"},{"internalType":"uint128","name":"amount1Requested","type":"uint128"}],"name":"collect","outputs":[{"internalType":"uint128","name":"amount0","type":"uint128"},{"internalType":"uint128","name":"amount1","type":"uint128"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint128","name":"amount0Requested","type":"uint128"},{"internalType":"uint128","name":"amount1Requested","type":"uint128"}],"name":"collectProtocol","outputs":[{"internalType":"uint128","name":"amount0","type":"uint128"},{"internalType":"uint128","name":"amount1","type":"uint128"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"factory","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"fee","outputs":[{"internalType":"uint24","name":"","type":"uint24"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeGrowthGlobal0X128","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"feeGrowthGlobal1X128","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount0","type":"uint256"},{"internalType":"uint256","name":"amount1","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"flash","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint16","name":"observationCardinalityNext","type":"uint16"}],"name":"increaseObservationCardinalityNext","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint160","name":"sqrtPriceX96","type":"uint160"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"liquidity","outputs":[{"internalType":"uint128","name":"","type":"uint128"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxLiquidityPerTick","outputs":[{"internalType":"uint128","name":"","type":"uint128"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"int24","name":"tickLower","type":"int24"},{"internalType":"int24","name":"tickUpper","type":"int24"},{"internalType":"uint128","name":"amount","type":"uint128"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"mint","outputs":[{"internalType":"uint256","name":"amount0","type":"uint256"},{"internalType":"uint256","name":"amount1","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"observations","outputs":[{"internalType":"uint32","name":"blockTimestamp","type":"uint32"},{"internalType":"int56","name":"tickCumulative","type":"int56"},{"internalType":"uint160","name":"secondsPerLiquidityCumulativeX128","type":"uint160"},{"internalType":"bool","name":"initialized","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint32[]","name":"secondsAgos","type":"uint32[]"}],"name":"observe","outputs":[{"internalType":"int56[]","name":"tickCumulatives","type":"int56[]"},{"internalType":"uint160[]","name":"secondsPerLiquidityCumulativeX128s","type":"uint160[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"positions","outputs":[{"internalType":"uint128","name":"liquidity","type":"uint128"},{"internalType":"uint256","name":"feeGrowthInside0LastX128","type":"uint256"},{"internalType":"uint256","name":"feeGrowthInside1LastX128","type":"uint256"},{"internalType":"uint128","name":"tokensOwed0","type":"uint128"},{"internalType":"uint128","name":"tokensOwed1","type":"uint128"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"protocolFees","outputs":[{"internalType":"uint128","name":"token0","type":"uint128"},{"internalType":"uint128","name":"token1","type":"uint128"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint8","name":"feeProtocol0","type":"uint8"},{"internalType":"uint8","name":"feeProtocol1","type":"uint8"}],"name":"setFeeProtocol","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"slot0","outputs":[{"internalType":"uint160","name":"sqrtPriceX96","type":"uint160"},{"internalType":"int24","name":"tick","type":"int24"},{"internalType":"uint16","name":"observationIndex","type":"uint16"},{"internalType":"uint16","name":"observationCardinality","type":"uint16"},{"internalType":"uint16","name":"observationCardinalityNext","type":"uint16"},{"internalType":"uint8","name":"feeProtocol","type":"uint8"},{"internalType":"bool","name":"unlocked","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"int24","name":"tickLower","type":"int24"},{"internalType":"int24","name":"tickUpper","type":"int24"}],"name":"snapshotCumulativesInside","outputs":[{"internalType":"int56","name":"tickCumulativeInside","type":"int56"},{"internalType":"uint160","name":"secondsPerLiquidityInsideX128","type":"uint160"},{"internalType":"uint32","name":"secondsInside","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"bool","name":"zeroForOne","type":"bool"},{"internalType":"int256","name":"amountSpecified","type":"int256"},{"internalType":"uint160","name":"sqrtPriceLimitX96","type":"uint160"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"swap","outputs":[{"internalType":"int256","name":"amount0","type":"int256"},{"internalType":"int256","name":"amount1","type":"int256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"int16","name":"","type":"int16"}],"name":"tickBitmap","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tickSpacing","outputs":[{"internalType":"int24","name":"","type":"int24"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"int24","name":"","type":"int24"}],"name":"ticks","outputs":[{"internalType":"uint128","name":"liquidityGross","type":"uint128"},{"internalType":"int128","name":"liquidityNet","type":"int128"},{"internalType":"uint256","name":"feeGrowthOutside0X128","type":"uint256"},{"internalType":"uint256","name":"feeGrowthOutside1X128","type":"uint256"},{"internalType":"int56","name":"tickCumulativeOutside","type":"int56"},{"internalType":"uint160","name":"secondsPerLiquidityOutsideX128","type":"uint160"},{"internalType":"uint32","name":"secondsOutside","type":"uint32"},{"internalType":"bool","name":"initialized","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"token0","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"token1","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}]'
 
 
-def _get_token_name(redis_client: StrictRedis, web3: Web3, etherscan_api_key: str, token_address: any) -> (str, str):
+def _get_token_name_from_moralis(address: str, moralis_api_key: str) -> (str, str):
+    """Get token name and symbol from Moralis API
+
+    Retrieves token name and symbol for given token address from Moralis API.
+
+    Parameters:
+        address: str
+            Contract address to get ABI for
+        moralis_api_key: str
+            Moralis API secret key
+
+    Returns:
+        tuple: A tuple containing multiple values.
+            - element 1 (str): Token name
+            - element 2 (str): Token symbol
+    """
+    url = 'https://deep-index.moralis.io/api/v2.2/erc20/metadata'
+
+    headers = {
+        'accept': 'application/json',
+        'X-API-Key': moralis_api_key
+    }
+
+    params = {
+        'chain': 'eth',
+        "addresses": [address]
+    }
+
+    http_resp = requests.get(url, headers=headers, params=params)
+
+    if http_resp.status_code == 200:
+        body = json.loads(http_resp.text)
+        return body[0]['name'], body[0]['symbol']
+    else:
+        return None, None
+
+
+def _get_token_name(redis_client: StrictRedis, web3: Web3, etherscan_api_key: str, moralis_api_key: str, token_address: any) -> (str, str):
     """Get token name and symbol.
 
     Retrieves token name and symbol for given token address.
 
     Checks if token address is present in redis cache, if yes, then retrieves the values from it,
-    otherwise the values will be retrieved using web3 library.
+    otherwise the values will be retrieved using web3 library or by calling Moralis API.
 
     Parameters:
         redis_client: StrictRedis
@@ -200,7 +237,14 @@ def _get_token_name(redis_client: StrictRedis, web3: Web3, etherscan_api_key: st
             redis_client.set(key_token_symbol_name, symbol_result)
             return name_result, symbol_result
         except (ABIFunctionNotFound, NoABIFunctionsFound):
-            return 'PROXY_CONTRACT_UNKNOWN_NAME_API_EXC', 'PROXY_CONTRACT_UNKNOWN_SYMBOL_API_EXC'
+            token_name, token_symbol = (
+                _get_token_name_from_moralis(address=token_address, moralis_api_key=moralis_api_key))
+            if token_name is not None and token_symbol is not None:
+                redis_client.set(key_token_name, token_name)
+                redis_client.set(key_token_symbol_name, token_symbol)
+                return token_name, token_symbol
+            else:
+                return 'PROXY_CONTRACT_UNKNOWN_NAME_API_EXC', 'PROXY_CONTRACT_UNKNOWN_SYMBOL_API_EXC'
 
 
 def _get_pool_tokens_addresses(redis_client: StrictRedis, pool_address: str, pool_contract: any) -> (str, str):
@@ -239,7 +283,7 @@ def _get_pool_tokens_addresses(redis_client: StrictRedis, pool_address: str, poo
         return token0_address, token1_address
 
 
-def _parse_row(redis_client, web3, router_codec, etherscan_api_key, row: Row):
+def _parse_row(redis_client, web3, router_codec, etherscan_api_key, moralis_api_key, row: Row):
 
     # UR transactions tracked commands
     CMD_V2_SWAP_EXACT_IN = 'V2_SWAP_EXACT_IN'
@@ -295,10 +339,14 @@ def _parse_row(redis_client, web3, router_codec, etherscan_api_key, row: Row):
         cmd_identifier = row_dict['event_type_cmd_identifier']
         try:
             if len(address_abi) == 0:
+                key_prefix = 'contract_'
+                key_name = f'{key_prefix}{pool_address}'
                 if cmd_identifier in (CMD_V2_SWAP_EXACT_IN, CMD_V2_SWAP_EXACT_OUT):
                     address_abi = _get_uniswap_v2_default_abi()
+                    redis_client.set(key_name, address_abi)
                 elif cmd_identifier in (CMD_V3_SWAP_EXACT_IN, CMD_V3_SWAP_EXACT_OUT):
                     address_abi = _get_uniswap_v3_default_abi()
+                    redis_client.set(key_name, address_abi)
             pool_contract = web3.eth.contract(address=pool_address, abi=address_abi)
             decoded_event = pool_contract.events.Swap().process_log({
                 'data': row_dict['data'],
@@ -329,15 +377,19 @@ def _parse_row(redis_client, web3, router_codec, etherscan_api_key, row: Row):
                 # v2_amount0In > 0 means that pool token0 is an INPUT in Uniswap V2 swap event, v2_amount1Out > 0 means that pool token1 is OUTPUT
                 if (int(row_dict['v2_amount0In']) > 0) and (int(row_dict['v2_amount1Out']) > 0):
                     row_dict['token_in_address'] = str(token0_address)
-                    row_dict['token_in_name'], row_dict['token_in_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token0_address)
+                    row_dict['token_in_name'], row_dict['token_in_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token0_address))
                     row_dict['token_out_address'] = str(token1_address)
-                    row_dict['token_out_name'], row_dict['token_out_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token1_address)
+                    row_dict['token_out_name'], row_dict['token_out_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token1_address))
                 # Otherwise pool token0 is OUTPUT, pool token1 is INPUT
                 else:
                     row_dict['token_in_address'] = str(token1_address)
-                    row_dict['token_in_name'], row_dict['token_in_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token1_address)
+                    row_dict['token_in_name'], row_dict['token_in_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token1_address))
                     row_dict['token_out_address'] = str(token0_address)
-                    row_dict['token_out_name'], row_dict['token_out_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token0_address)
+                    row_dict['token_out_name'], row_dict['token_out_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token0_address))
 
             elif cmd_identifier in (CMD_V3_SWAP_EXACT_IN, CMD_V3_SWAP_EXACT_OUT):
                 row_dict['v2_amount0In'] = None
@@ -353,17 +405,21 @@ def _parse_row(redis_client, web3, router_codec, etherscan_api_key, row: Row):
                 # v3_amount0 > 0 means that pool token0 is an INPUT in Uniswap V3 swap event, v3_amount1 < 0 means that pool token1 is OUTPUT
                 if (int(row_dict['v3_amount0']) > 0) and (int(row_dict['v3_amount1']) < 0):
                     row_dict['token_in_address'] = str(token0_address)
-                    row_dict['token_in_name'], row_dict['token_in_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token0_address)
+                    row_dict['token_in_name'], row_dict['token_in_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token0_address))
                     row_dict['token_out_address'] = str(token1_address)
-                    row_dict['token_out_name'], row_dict['token_out_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token1_address)
+                    row_dict['token_out_name'], row_dict['token_out_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token1_address))
                 # Otherwise pool token0 is OUTPUT, pool token1 is INPUT
                 else:
                     row_dict['token_in_address'] = str(token1_address)
-                    row_dict['token_in_name'], row_dict['token_in_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token1_address)
+                    row_dict['token_in_name'], row_dict['token_in_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token1_address))
                     row_dict['token_out_address'] = str(token0_address)
-                    row_dict['token_out_name'], row_dict['token_out_symbol'] = _get_token_name(redis_client, web3, etherscan_api_key, token0_address)
+                    row_dict['token_out_name'], row_dict['token_out_symbol'] = (
+                        _get_token_name(redis_client, web3, etherscan_api_key, moralis_api_key, token0_address))
         except NoABIEventsFound:
-            callback_msg = 'POOL_ADDRESS_SRC_CODE_NOT_VERIFIED_BY_ETHERSCAN_API_EXC'
+            callback_msg = 'POOL_ADDRESS_SRC_CODE_NOT_VERIFIED_EXC'
             row_dict['event_type_cmd_identifier'] = callback_msg
             row_dict['token_in_address'] = None
             row_dict['token_in_name'], row_dict['token_in_symbol'] = None, None
@@ -418,12 +474,12 @@ def _parse_partition(iterator):
     redis_client = StrictRedis(host=os.getenv("REDIS_HOST"),
                                port=int(os.getenv("REDIS_PORT")),
                                db=int(os.getenv("REDIS_DB")))
-    rpc_provider = Web3.HTTPProvider(os.getenv('RPC_ANKR_HTTPS_ENDPOINT'))
+    rpc_provider = Web3.HTTPProvider(os.getenv('RPC_INFURA_HTTPS_ENDPOINT'))
     web3 = Web3(provider=rpc_provider)
     router_codec = RouterCodec(w3=web3)
 
     for row in iterator:
-        yield _parse_row(redis_client, web3, router_codec, os.getenv("ETHERSCAN_API_KEY"), row)
+        yield _parse_row(redis_client, web3, router_codec, os.getenv("ETHERSCAN_API_KEY"), os.getenv("MORALIS_API_KEY"), row)
 
     redis_client.close()
 
