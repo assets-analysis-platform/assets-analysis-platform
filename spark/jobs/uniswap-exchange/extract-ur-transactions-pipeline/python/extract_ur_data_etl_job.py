@@ -2,11 +2,11 @@
 extract_ur_data_etl_job.py
 ~~~~~~~~~~
 
-Usage:
+Example usage:
     $SPARK_HOME/bin/spark-submit \
     --master spark://localhost:7077 \
     --py-files packages.zip \
-    --files configs/extract_ur_data_etl_config.json \
+    --files configs/uniswap-exchange/extract-ur-transactions-pipeline/extract_ur_data_etl_config.json \
     jobs/uniswap-exchange/extract-ur-transactions-pipeline/python/extract_ur_data_etl_job.py <eth_transactions.csv> <eth_logs.csv> <output_path>
 """
 
@@ -474,7 +474,7 @@ def _parse_partition(iterator):
     redis_client = StrictRedis(host=os.getenv("REDIS_HOST"),
                                port=int(os.getenv("REDIS_PORT")),
                                db=int(os.getenv("REDIS_DB")))
-    rpc_provider = Web3.HTTPProvider(os.getenv('RPC_INFURA_HTTPS_ENDPOINT'))
+    rpc_provider = Web3.HTTPProvider(os.getenv('RPC_ANKR_HTTPS_ENDPOINT'))
     web3 = Web3(provider=rpc_provider)
     router_codec = RouterCodec(w3=web3)
 

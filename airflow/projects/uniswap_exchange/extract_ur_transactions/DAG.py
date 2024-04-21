@@ -26,9 +26,7 @@ def prepare_args_for_spark(**kwargs):
 
 @dag(
     dag_id=DAG_name,
-    # start_date=datetime(2023, 5, 9, 4, 0, 0),
-    start_date=datetime(2023, 9, 20, 4, 0, 0),  # TODO -> CHANGE ME
-    end_date=datetime(2023, 10, 5, 4, 0, 0),    # TODO -> CHANGE ME
+    start_date=datetime(2023, 5, 9, 4, 0, 0),
     schedule_interval="0 4 * * *",  # Every day at 04:00 a.m
     max_active_runs=1,              # max number of active DAG runs in parallel
     default_args={
