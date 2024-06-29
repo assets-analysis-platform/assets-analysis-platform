@@ -54,15 +54,15 @@ services:
       SPARK_WORKER_CORES: 2
       SPARK_WORKER_MEMORY: 4g
       SPARK_MASTER_URL: spark://spark-master:7077
-  spark-worker-3:
-    <<: *spark-common
-    container_name: spark-worker-3
-    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
-    depends_on:
-      - spark-master
-      - redis
-    environment:
-      SPARK_MODE: worker
-      SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 4g
-      SPARK_MASTER_URL: spark://spark-master:7077
+#  spark-worker-3:
+#    <<: *spark-common
+#    container_name: spark-worker-3
+#    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+#    depends_on:
+#      - spark-master
+#      - redis
+#    environment:
+#      SPARK_MODE: worker
+#      SPARK_WORKER_CORES: 2
+#      SPARK_WORKER_MEMORY: 4g
+#      SPARK_MASTER_URL: spark://spark-master:7077

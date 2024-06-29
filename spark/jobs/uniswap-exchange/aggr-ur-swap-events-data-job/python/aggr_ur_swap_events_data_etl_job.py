@@ -50,7 +50,7 @@ def main(input_csv_files_uris: str, output_uri: str, failed_rows_output_uri: str
     data_df = get_data(spark, input_csv_files_uris)
     success_rows_df,  failed_rows_df = process_data(df=data_df)
     write_to_s3(success_rows_df, output_uri)
-    write_to_s3(failed_rows_df, failed_rows_output_uri)
+    write_failed_rows_to_s3(failed_rows_df, failed_rows_output_uri)
 
     LOG.warn('Aggregate Uniswap Universal Router swaps job SUCCESS')
     spark.stop()
@@ -124,6 +124,16 @@ def process_data(df: DataFrame) -> (DataFrame, DataFrame):
 
 def write_to_s3(df: DataFrame, s3_result_uri: str) -> None:
     (df
+     .coalesce(1)
+     .write
+     .partitionBy("pool_address")
+     .option("header", "true")
+     .mode("overwrite")
+     .csv(s3_result_uri))
+
+
+def write_failed_rows_to_s3(df: DataFrame, s3_result_uri: str) -> None:
+    (df
      .repartition(1)
      .write
      .mode("overwrite")
@@ -134,6 +144,6 @@ def write_to_s3(df: DataFrame, s3_result_uri: str) -> None:
 if __name__ == "__main__":
     main(
         input_csv_files_uris=sys.argv[1],
-        output_uri=sys.argv[2],
-        failed_rows_output_uri=sys.argv[3]
+        output_uri="/tmp/results",
+        failed_rows_output_uri="/tmp/results"
     )
