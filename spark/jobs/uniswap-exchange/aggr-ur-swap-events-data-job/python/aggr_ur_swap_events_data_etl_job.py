@@ -124,7 +124,7 @@ def process_data(df: DataFrame) -> (DataFrame, DataFrame):
 
 def write_to_s3(df: DataFrame, s3_result_uri: str) -> None:
     (df
-     .coalesce(1)
+     .repartition(1)
      .write
      .partitionBy("pool_address")
      .option("header", "true")
